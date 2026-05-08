@@ -17,7 +17,7 @@
     --purple: #6b4fa0;
     --purple-light: #f0ecf8;
     --cream: #faf8f4;
-    --white: #ffffff;
+    --white: #ffffff;<
     --text: #2c2c3e;
     --muted: #6b7280;
     --border: #e8e2d8;
@@ -33,6 +33,8 @@
     font-size: 16px;
     line-height: 1.7;
     overflow-x: hidden;
+    padding-top: 64px;  /* height of navbar */
+
   }
 
   #progress-bar {
@@ -607,6 +609,21 @@
 </head>
 <body>
 
+<nav class="kps-nav">
+  <a href="/nlp/" class="kps-nav-brand">
+    <img src="../KP_Singh.png" alt="K.P. Singh" class="kps-nav-logo">
+    <div>
+      <div class="kps-nav-name">K.P. Singh</div>
+      <div class="kps-nav-sub">SRHU · Data Science</div>
+    </div>
+  </a>
+  <div class="kps-nav-links">
+    <a href="/nlp/#units">Units</a>
+    <a href="/nlp/#about">About</a>
+    <a href="/nlp/unit2/" class="active">Unit 2</a>
+    <a href="https://kpsingh.in" target="_blank" rel="noopener" class="ext">kpsingh.in ↗</a>
+  </div>
+</nav>  
 <div id="progress-bar"></div>
 
 <header class="site-header">
