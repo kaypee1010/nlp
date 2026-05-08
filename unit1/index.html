@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit 1 – Introduction to NLP | BSc 2nd Sem</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lora:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1a1f3c;
+    --gold: #e8a020;
+    --gold-light: #fdf0d5;
+    --coral: #e05a3a;
+    --green: #2a7a5a;
+    --green-light: #e8f5ef;
+    --cream: #fdf8f0;
+    --white: #ffffff;
+    --text: #2c2c3e;
+    --muted: #6b7280;
+    --border: #e8e0d4;
+    --card: #ffffff;
+    --formula-bg: #1a1f3c;
+    --formula-text: #f0d080;
+    --tip-bg: #fff8e6;
+    --tip-border: #e8a020;
+    --important-bg: #fff0ee;
+    --important-border: #e05a3a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Lora', Georgia, serif;
+    background: var(--cream);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── TOP PROGRESS BAR ── */
+  #progress-bar {
+    position: fixed; top: 0; left: 0; height: 4px;
+    background: linear-gradient(90deg, var(--gold), var(--coral));
+    z-index: 9999; transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  /* ── HEADER ── */
+  .site-header {
+    background: var(--navy);
+    color: white;
+    padding: 48px 20px 36px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .site-header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(232,160,32,0.15), transparent 60%),
+                radial-gradient(ellipse at 70% 20%, rgba(224,90,58,0.1), transparent 50%);
+  }
+  .header-badge {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--navy);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+  .site-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 7vw, 42px);
+    font-weight: 900;
+    line-height: 1.2;
+    position: relative;
+  }
+  .site-header p {
+    color: rgba(255,255,255,0.7);
+    margin-top: 10px;
+    font-size: 14px;
+    font-style: italic;
+    position: relative;
+  }
+
+  /* ── TOPIC NAV (sticky pills) ── */
+  .topic-nav {
+    position: sticky; top: 4px; z-index: 100;
+    background: rgba(253,248,240,0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .topic-nav::-webkit-scrollbar { display: none; }
+  .topic-nav a {
+    display: inline-block;
+    background: white;
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-right: 6px;
+    transition: all 0.2s;
+  }
+  .topic-nav a:hover, .topic-nav a.active {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: white;
+  }
+
+  /* ── MAIN ── */
+  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  /* ── SECTION BLOCK ── */
+  .topic-section {
+    background: var(--card);
+    border-radius: 16px;
+    border: 1.5px solid var(--border);
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(26,31,60,0.05);
+  }
+  .topic-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.2s;
+  }
+  .topic-header:hover { background: #faf7f2; }
+  .topic-header.open { background: var(--navy); color: white; }
+  .topic-num {
+    width: 36px; height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+    background: var(--gold-light);
+    color: var(--navy);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .topic-header.open .topic-num {
+    background: rgba(255,255,255,0.15);
+    color: white;
+  }
+  .topic-title-wrap { flex: 1; }
+  .topic-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .topic-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 2px;
+  }
+  .topic-header.open .topic-subtitle { color: rgba(255,255,255,0.6); }
+  .topic-arrow {
+    font-size: 20px;
+    transition: transform 0.3s;
+    color: var(--muted);
+  }
+  .topic-header.open .topic-arrow { transform: rotate(180deg); color: white; }
+
+  .topic-body {
+    display: none;
+    padding: 20px;
+    border-top: 1.5px solid var(--border);
+    animation: slideDown 0.25s ease;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── CONTENT ELEMENTS ── */
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--navy);
+    margin: 20px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid var(--gold);
+  }
+  h3:first-child { margin-top: 0; }
+  h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 16px 0 6px;
+  }
+  p { margin-bottom: 12px; }
+  p:last-child { margin-bottom: 0; }
+
+  .definition-box {
+    background: var(--navy);
+    color: white;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin: 14px 0;
+  }
+  .definition-box .def-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .definition-box p { margin: 0; font-size: 15px; }
+
+  .formula-box {
+    background: var(--formula-bg);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 14px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .formula-box .formula-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .formula-box .formula-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    color: var(--formula-text);
+    line-height: 1.8;
+    white-space: pre;
+  }
+
+  .tip-box {
+    background: var(--tip-bg);
+    border-left: 4px solid var(--tip-border);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 14.5px;
+  }
+  .tip-box .tip-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .important-box {
+    background: var(--important-bg);
+    border-left: 4px solid var(--important-border);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 14.5px;
+  }
+  .important-box .imp-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--coral);
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .example-box {
+    background: var(--green-light);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 12px 0;
+    font-size: 14.5px;
+    border: 1px solid #c3e6d5;
+  }
+  .example-box .ex-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--green);
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .example-box code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(42,122,90,0.12);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #1a5c3a;
+  }
+
+  /* ── TABLE ── */
+  .styled-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; }
+  .styled-table th {
+    background: var(--navy);
+    color: white;
+    padding: 10px 12px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+  .styled-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .styled-table tr:nth-child(even) td { background: #fafaf8; }
+  .styled-table tr:last-child td { border-bottom: none; }
+
+  /* ── PILL LIST ── */
+  .pill-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+  .pill {
+    background: var(--gold-light);
+    border: 1.5px solid #e8c870;
+    color: var(--navy);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 13.5px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .pill.green { background: var(--green-light); border-color: #a0d4bb; color: #1a5c3a; }
+  .pill.red { background: #fff0ee; border-color: #f0b0a4; color: #8c2010; }
+
+  /* ── STEPS ── */
+  .step-list { counter-reset: steps; list-style: none; padding: 0; margin: 12px 0; }
+  .step-list li {
+    counter-increment: steps;
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    min-width: 28px; height: 28px;
+    background: var(--gold);
+    color: var(--navy);
+    border-radius: 50%;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-list li strong { font-weight: 600; }
+
+  /* ── QUIZ ── */
+  .quiz-section {
+    background: var(--navy);
+    color: white;
+    border-radius: 12px;
+    padding: 18px 18px;
+    margin: 20px 0 0;
+  }
+  .quiz-section h4 {
+    color: var(--gold);
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    margin-bottom: 14px;
+  }
+  .quiz-q { margin-bottom: 14px; font-size: 14.5px; }
+  .quiz-q p { margin-bottom: 8px; font-style: italic; color: rgba(255,255,255,0.9); }
+  .quiz-options { display: flex; flex-direction: column; gap: 7px; }
+  .quiz-opt {
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    color: white;
+    padding: 9px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: left;
+    transition: all 0.2s;
+    font-family: 'Lora', serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .quiz-opt:hover { background: rgba(255,255,255,0.14); }
+  .quiz-opt.correct { background: rgba(42,180,100,0.3); border-color: #2ab464; }
+  .quiz-opt.wrong { background: rgba(220,60,40,0.3); border-color: #dc3c28; }
+  .quiz-feedback {
+    font-size: 13px;
+    margin-top: 6px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.ok { background: rgba(42,180,100,0.2); color: #90efc0; }
+  .quiz-feedback.no { background: rgba(220,60,40,0.2); color: #ffb0a0; }
+
+  /* ── WORKED EXAMPLE (expandable) ── */
+  .worked-wrap { border: 1.5px solid var(--border); border-radius: 10px; overflow: hidden; margin: 14px 0; }
+  .worked-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--gold-light);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--navy);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .worked-body {
+    display: none;
+    padding: 14px 16px;
+    font-size: 14px;
+    background: white;
+  }
+  .worked-body.open { display: block; }
+  .worked-step {
+    display: flex; gap: 10px; margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .worked-step:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .ws-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    min-width: 52px;
+    padding-top: 2px;
+    font-weight: 600;
+  }
+
+  /* ── PIPELINE DIAGRAM ── */
+  .pipeline {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 0; margin: 16px 0;
+  }
+  .pipe-step {
+    width: 100%;
+    max-width: 280px;
+    background: white;
+    border: 2px solid var(--navy);
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--navy);
+    position: relative;
+  }
+  .pipe-step.highlight { background: var(--navy); color: white; }
+  .pipe-arrow {
+    font-size: 20px;
+    color: var(--gold);
+    line-height: 1.2;
+  }
+
+  /* ── CONCEPT CARD GRID ── */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .concept-card {
+    background: var(--navy);
+    color: white;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 13.5px;
+  }
+  .concept-card .cc-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  /* ── MEMORY AID ── */
+  .memory-box {
+    background: linear-gradient(135deg, #1a1f3c, #2d3560);
+    color: white;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin: 14px 0;
+    text-align: center;
+  }
+  .memory-box .mem-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .memory-box .mem-content {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* ── FOOTER ── */
+  .unit-footer {
+    background: var(--navy);
+    color: white;
+    padding: 28px 20px;
+    text-align: center;
+    margin-top: 40px;
+  }
+  .unit-footer h3 {
+    font-family: 'Playfair Display', serif;
+    color: var(--gold);
+    border: none;
+    margin-bottom: 8px;
+  }
+  .unit-footer p { font-size: 14px; color: rgba(255,255,255,0.7); }
+  .next-unit-btn {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--navy);
+    padding: 12px 28px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+    margin-top: 16px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .next-unit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(232,160,32,0.4); }
+
+  /* ── COMPARISON ROW ── */
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+  }
+  .compare-side {
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  .compare-side.good { background: var(--green-light); border: 1.5px solid #a0d4bb; }
+  .compare-side.bad { background: #fff0ee; border: 1.5px solid #f0b0a4; }
+  .compare-side .cs-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .compare-side.good .cs-label { color: var(--green); }
+  .compare-side.bad .cs-label { color: var(--coral); }
+
+  @media (max-width: 400px) {
+    .concept-grid, .compare-row { grid-template-columns: 1fr; }
+    .formula-box .formula-text { font-size: 12px; }
+  }
+
+  /* scroll-margin for nav links */
+  .topic-section { scroll-margin-top: 60px; }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<header class="site-header">
+  <div class="header-badge">BSc 2nd Semester · NLP</div>
+  <h1>Unit 1: Introduction to<br>Natural Language Processing</h1>
+  <p>7 lectures · Entropy · N-grams · Smoothing · Perplexity</p>
+</header>
+
+<nav class="topic-nav" id="topicNav">
+  <a href="#t1">What is NLP</a>
+  <a href="#t2">Levels</a>
+  <a href="#t3">Issues</a>
+  <a href="#t4">Applications</a>
+  <a href="#t5">ML Role</a>
+  <a href="#t6">Probability</a>
+  <a href="#t7">Entropy</a>
+  <a href="#t8">Collocations</a>
+  <a href="#t9">N-grams</a>
+  <a href="#t10">Smoothing</a>
+  <a href="#t11">Perplexity</a>
+</nav>
+
+<main>
+
+<!-- ══════════════ TOPIC 1 ══════════════ -->
+<div class="topic-section" id="t1">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">01</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">What is NLP?</div>
+      <div class="topic-subtitle">Definition · Why it matters · Real-life examples</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <div class="definition-box">
+      <div class="def-label">Definition</div>
+      <p><strong>Natural Language Processing (NLP)</strong> is a branch of Artificial Intelligence that enables computers to <em>understand, interpret, and generate</em> human language.</p>
+    </div>
+
+    <h3>What does NLP combine?</h3>
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="cc-title">Linguistics</div>
+        Rules of language — grammar, meaning, structure
+      </div>
+      <div class="concept-card">
+        <div class="cc-title">Probability</div>
+        Maths to handle uncertainty in language
+      </div>
+      <div class="concept-card">
+        <div class="cc-title">Computer Science</div>
+        Algorithms that process text efficiently
+      </div>
+      <div class="concept-card">
+        <div class="cc-title">Machine Learning</div>
+        Learning patterns from data automatically
+      </div>
+    </div>
+
+    <h3>Simple Real-Life Examples</h3>
+    <div class="example-box">
+      <div class="ex-label">You see NLP every day!</div>
+      <ol class="step-list" style="margin:8px 0 0 0;">
+        <li><strong>Google Translate</strong> — converts English to Hindi</li>
+        <li><strong>Gmail</strong> — suggests next words while typing</li>
+        <li><strong>Chatbots</strong> — answer customer service questions</li>
+        <li><strong>Siri / Alexa</strong> — understand your spoken words</li>
+        <li><strong>Spam filter</strong> — detects junk emails automatically</li>
+      </ol>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-label">🎯 Exam Tip</div>
+      If asked "what is NLP", always mention: AI branch + understand/interpret/generate language + combines linguistics + probability + CS + ML.
+    </div>
+
+    <div class="quiz-section">
+      <h4>Quick Check ✓</h4>
+      <div class="quiz-q">
+        <p>Which of the following is NOT part of what NLP combines?</p>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="answer(this, false)">Linguistics</button>
+          <button class="quiz-opt" onclick="answer(this, false)">Probability</button>
+          <button class="quiz-opt" onclick="answer(this, true)">Chemistry</button>
+          <button class="quiz-opt" onclick="answer(this, false)">Machine Learning</button>
+        </div>
+        <div class="quiz-feedback no">NLP combines Linguistics, Probability, Computer Science, and Machine Learning — not Chemistry!</div>
+        <div class="quiz-feedback ok">Correct! Chemistry has nothing to do with NLP.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 2 ══════════════ -->
+<div class="topic-section" id="t2">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">02</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Levels of Language in NLP</div>
+      <div class="topic-subtitle">Syntax · Semantics · Pragmatics</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <p>Human language has three levels that NLP must handle. Think of them as layers — from structure to meaning to context.</p>
+
+    <table class="styled-table">
+      <tr><th>Level</th><th>Focus</th><th>NLP Task</th><th>Example</th></tr>
+      <tr><td><strong>Syntax</strong></td><td>Sentence structure</td><td>Parsing, POS tagging</td><td>Grammar rules</td></tr>
+      <tr><td><strong>Semantics</strong></td><td>Word meaning</td><td>Word-sense disambiguation</td><td>Dictionary meaning</td></tr>
+      <tr><td><strong>Pragmatics</strong></td><td>Context meaning</td><td>Sentiment analysis</td><td>Detect sarcasm</td></tr>
+    </table>
+
+    <h3>Syntax — Structure of Sentences</h3>
+    <div class="definition-box">
+      <div class="def-label">Syntax</div>
+      <p>The grammatical structure of a sentence — how words must be arranged.</p>
+    </div>
+    <div class="example-box">
+      <div class="ex-label">Example</div>
+      <p>✅ <code>"The boy eats an apple."</code> → Subject + Verb + Object — Correct syntax</p>
+      <p>❌ <code>"Boy apple the eats."</code> → Same words, but wrong order — no meaning!</p>
+      <p>💡 When Microsoft Word underlines a sentence in red — it is checking syntax.</p>
+    </div>
+
+    <h3>Semantics — Meaning of Words</h3>
+    <div class="example-box">
+      <div class="ex-label">The Bank Problem</div>
+      <p><code>"He deposited money in the bank."</code></p>
+      <p>Which bank? 🏦 Financial bank? Or 🌊 River bank?</p>
+      <p>Semantic analysis resolves this using context. Google knows "Apple" = company when you search "iPhone".</p>
+    </div>
+
+    <h3>Pragmatics — Meaning in Context</h3>
+    <div class="example-box">
+      <div class="ex-label">Reading Between Lines</div>
+      <p>Friend says: <code>"It's very cold here."</code></p>
+      <p>Literal meaning: Temperature is low.</p>
+      <p>Pragmatic meaning: <strong>"Please close the window!"</strong></p>
+      <p>💡 Chatbots use pragmatics to understand <code>"I'm starving"</code> = "Give me food suggestions".</p>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-label">🎯 Memory Trick</div>
+      <strong>S-S-P</strong> → <strong>S</strong>tructure (Syntax) → <strong>S</strong>entence meaning (Semantics) → <strong>P</strong>urpose in context (Pragmatics). Think: "Structure, Sense, Purpose."
+    </div>
+
+    <div class="quiz-section">
+      <h4>Quick Check ✓</h4>
+      <div class="quiz-q">
+        <p>"The computer understands that 'great' is sarcasm in a negative review." This is an example of which level?</p>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="answer(this, false)">Syntax</button>
+          <button class="quiz-opt" onclick="answer(this, false)">Semantics</button>
+          <button class="quiz-opt" onclick="answer(this, true)">Pragmatics</button>
+        </div>
+        <div class="quiz-feedback ok">Correct! Understanding sarcasm requires context → that's Pragmatics.</div>
+        <div class="quiz-feedback no">Sarcasm needs context to detect — that's the job of Pragmatics, not Syntax or Semantics alone.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 3 ══════════════ -->
+<div class="topic-section" id="t3">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">03</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Major Issues in NLP</div>
+      <div class="topic-subtitle">5 reasons why language is hard for computers</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <p>Natural language is <em>messy</em>. Here are the five main reasons why NLP is challenging:</p>
+
+    <h3>1. Ambiguity</h3>
+    <div class="example-box">
+      <div class="ex-label">Classic Example</div>
+      <p><code>"I saw the man with a telescope."</code></p>
+      <p>Did <em>I</em> use a telescope to see the man? OR did the man <em>have</em> a telescope? Two completely different meanings — same sentence!</p>
+    </div>
+
+    <h3>2. Synonymy</h3>
+    <div class="example-box">
+      <div class="ex-label">Same meaning, different words</div>
+      <p>Big = Large = Huge = Enormous</p>
+      <p>A search for "big house" should also find "large house" — computers need to know these mean the same thing.</p>
+    </div>
+
+    <h3>3. Polysemy</h3>
+    <div class="example-box">
+      <div class="ex-label">One word, many meanings</div>
+      <p><code>Bat</code> → Cricket bat OR flying animal</p>
+      <p><code>Bank</code> → Financial bank OR river bank</p>
+      <p><code>Date</code> → Calendar date OR a fruit OR a romantic outing</p>
+    </div>
+
+    <h3>4. Language Variability</h3>
+    <div class="example-box">
+      <div class="ex-label">People speak differently!</div>
+      <div class="compare-row">
+        <div class="compare-side good">
+          <div class="cs-label">Formal</div>
+          "I do not know the answer."
+        </div>
+        <div class="compare-side bad">
+          <div class="cs-label">Informal</div>
+          "Dunno lol!"
+        </div>
+      </div>
+      <p style="margin-top:8px">Same meaning. NLP must handle both.</p>
+    </div>
+
+    <h3>5. Sarcasm</h3>
+    <div class="example-box">
+      <div class="ex-label">Tone is invisible in text</div>
+      <p><code>"Oh great, the power is out again."</code></p>
+      <p>"Great" here is NOT positive. But a computer sees the word "great" and may classify this as positive sentiment!</p>
+    </div>
+
+    <div class="memory-box">
+      <div class="mem-title">Memory Aid — 5 Issues</div>
+      <div class="mem-content"><strong>A</strong>mbiguity · <strong>S</strong>ynonymy · <strong>P</strong>olysemy · <strong>V</strong>ariability · <strong>S</strong>arcasm</div>
+      <p style="margin-top:8px;font-size:13px;color:rgba(255,255,255,0.6)">Remember: "<strong>A Silly Parrot Very Slowly</strong>"</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 4 ══════════════ -->
+<div class="topic-section" id="t4">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">04</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">NLP Pipeline & Applications</div>
+      <div class="topic-subtitle">How raw text becomes understanding</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <h3>The NLP Pipeline</h3>
+    <p>Every NLP system follows this sequence of steps:</p>
+
+    <div class="pipeline">
+      <div class="pipe-step highlight">📄 Raw Text Input</div>
+      <div class="pipe-arrow">↓</div>
+      <div class="pipe-step">✂️ Tokenization<br><small style="font-weight:400;color:#888">Split text into words</small></div>
+      <div class="pipe-arrow">↓</div>
+      <div class="pipe-step">🚫 Stopword Removal<br><small style="font-weight:400;color:#888">Remove "the", "is", "a"</small></div>
+      <div class="pipe-arrow">↓</div>
+      <div class="pipe-step">🌱 Stemming / Lemmatization<br><small style="font-weight:400;color:#888">"playing" → "play"</small></div>
+      <div class="pipe-arrow">↓</div>
+      <div class="pipe-step">🔢 Feature Extraction<br><small style="font-weight:400;color:#888">Convert text to numbers</small></div>
+      <div class="pipe-arrow">↓</div>
+      <div class="pipe-step">🤖 Modeling<br><small style="font-weight:400;color:#888">N-gram or ML model</small></div>
+      <div class="pipe-arrow">↓</div>
+      <div class="pipe-step highlight">📊 Evaluation<br><small style="font-weight:400;color:rgba(255,255,255,0.7)">Accuracy / Perplexity</small></div>
+    </div>
+
+    <h3>Real-World Applications</h3>
+    <table class="styled-table">
+      <tr><th>Application</th><th>Real Example</th></tr>
+      <tr><td>Machine Translation</td><td>Google Translate</td></tr>
+      <tr><td>Sentiment Analysis</td><td>Product review ratings</td></tr>
+      <tr><td>Chatbots</td><td>Customer support bots</td></tr>
+      <tr><td>Speech Recognition</td><td>Google voice typing</td></tr>
+      <tr><td>Spam Detection</td><td>Gmail spam filter</td></tr>
+      <tr><td>Text Summarization</td><td>News summary apps</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 5 ══════════════ -->
+<div class="topic-section" id="t5">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">05</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Role of Machine Learning in NLP</div>
+      <div class="topic-subtitle">Why rules alone don't work</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <div class="compare-row">
+      <div class="compare-side bad">
+        <div class="cs-label">Old Way: Rule-Based</div>
+        Write grammar rules manually. Fails when language varies. Does not scale. Early chatbots used this.
+      </div>
+      <div class="compare-side good">
+        <div class="cs-label">New Way: ML-Based</div>
+        Feed data, let computer find patterns. Flexible, scalable. Google Translate uses this.
+      </div>
+    </div>
+
+    <div class="example-box">
+      <div class="ex-label">Simple Analogy</div>
+      <p><strong>Teaching a child to read:</strong></p>
+      <p>Rule-based = Give the child a 500-page grammar book and say "follow these rules".</p>
+      <p>ML-based = Show the child 10,000 books. The child figures out the rules on their own!</p>
+    </div>
+
+    <h3>ML Approach in Practice</h3>
+    <ol class="step-list">
+      <li>Collect labelled data (e.g., 10,000 spam + non-spam emails)</li>
+      <li>Feed the data into an ML algorithm</li>
+      <li>Algorithm detects patterns (certain words predict spam)</li>
+      <li>Model can now classify new emails it has never seen</li>
+    </ol>
+
+    <table class="styled-table">
+      <tr><th>Feature</th><th>Rule-Based</th><th>ML-Based</th></tr>
+      <tr><td>Uses</td><td>Grammar rules</td><td>Data patterns</td></tr>
+      <tr><td>Flexibility</td><td>Low</td><td>High</td></tr>
+      <tr><td>Scalability</td><td>Poor</td><td>Good</td></tr>
+      <tr><td>Adaptability</td><td>Hard</td><td>Easy</td></tr>
+    </table>
+
+    <div class="tip-box">
+      <div class="tip-label">🎯 Exam Tip</div>
+      In exam, always mention the limitation of rule-based NLP: <em>"Language is too complex and variable for fixed rules to cover all cases."</em>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 6 ══════════════ -->
+<div class="topic-section" id="t6">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">06</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Probability Basics in NLP</div>
+      <div class="topic-subtitle">The maths of uncertainty</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <p>Language is uncertain. We don't know for sure what word comes next. So we use <strong>probability</strong> — a number between 0 and 1 showing how likely something is.</p>
+
+    <div class="formula-box">
+      <div class="formula-label">Basic Probability Formula</div>
+      <div class="formula-text">P(Event) = Favorable outcomes
+            ─────────────────
+              Total outcomes</div>
+    </div>
+
+    <div class="worked-wrap">
+      <div class="worked-toggle" onclick="toggleWorked(this)">
+        📝 Worked Example: Word Frequency <span>▾ Show</span>
+      </div>
+      <div class="worked-body">
+        <div class="worked-step">
+          <span class="ws-label">Given</span>
+          <div>Word "the" appears <strong>25 times</strong>. Total words = <strong>500</strong>.</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Apply</span>
+          <div>P("the") = 25 ÷ 500 = <strong>0.05</strong></div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Answer</span>
+          <div>The probability of "the" appearing is <strong>5%</strong>.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Why Probability in NLP?</h3>
+    <p>Instead of saying "the next word IS 'school'" (which we can't know for certain), we say:</p>
+    <div class="example-box">
+      <div class="ex-label">Probabilistic Thinking</div>
+      <p>"After 'I am going to the', the probability of 'school' is 40%, 'market' is 30%, 'park' is 20%, 'moon' is 0.01%."</p>
+      <p>The model picks the word with the <strong>highest probability</strong>.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 7 ══════════════ -->
+<div class="topic-section" id="t7">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">07</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Information Theory &amp; Entropy</div>
+      <div class="topic-subtitle">Measuring uncertainty in language</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <h3>Information Content</h3>
+    <p>How much "surprise" does a word carry? Rare words carry more information than common ones.</p>
+
+    <div class="example-box">
+      <div class="ex-label">Intuition</div>
+      <p>If I say "I saw a <strong>the</strong>" — not surprising at all. "The" is very common → low information.</p>
+      <p>If I say "I saw a <strong>volcano</strong>" — very surprising! Rare word → HIGH information.</p>
+    </div>
+
+    <div class="formula-box">
+      <div class="formula-label">Information Content Formula</div>
+      <div class="formula-text">I(x) = − log₂ P(x)
+
+Low probability → High information
+High probability → Low information</div>
+    </div>
+
+    <h3>Entropy — The Big Idea</h3>
+    <div class="definition-box">
+      <div class="def-label">Entropy H(X)</div>
+      <p>Entropy measures the <strong>average uncertainty</strong> in a system. In NLP: how unpredictable is the next word?</p>
+    </div>
+
+    <div class="example-box">
+      <div class="ex-label">Key Rule — Very Important!</div>
+      <p>🔵 If something is very <strong>predictable</strong> → <strong>LOW entropy</strong></p>
+      <p>🔴 If something is very <strong>unpredictable</strong> → <strong>HIGH entropy</strong></p>
+      <p>Example: "The sun rises in the ___" → Almost certainly "east" → LOW entropy</p>
+      <p>Example: "I saw a ___" → Could be anything → HIGH entropy</p>
+    </div>
+
+    <div class="formula-box">
+      <div class="formula-label">Entropy Formula</div>
+      <div class="formula-text">H(X) = −Σ P(x) × log₂ P(x)
+
+i.e., sum over all possible outcomes of:
+  (probability × log of that probability)
+then take the negative</div>
+    </div>
+
+    <h3>Worked Examples — Important for Exam!</h3>
+
+    <div class="worked-wrap">
+      <div class="worked-toggle" onclick="toggleWorked(this)">
+        📝 Example 1: Fair Coin (H = 1 bit) <span>▾ Show</span>
+      </div>
+      <div class="worked-body">
+        <div class="worked-step">
+          <span class="ws-label">Given</span>
+          <div>P(Heads) = 0.5, P(Tails) = 0.5</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Note</span>
+          <div>log₂(0.5) = −1</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Apply</span>
+          <div>H = −[0.5 × (−1) + 0.5 × (−1)]<br>H = −[−0.5 − 0.5] = −[−1] = <strong>1 bit</strong></div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Meaning</span>
+          <div>Fair coin = maximum uncertainty = <strong>1 bit entropy</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="worked-wrap">
+      <div class="worked-toggle" onclick="toggleWorked(this)">
+        📝 Example 2: Biased Coin (H &lt; 1 bit) <span>▾ Show</span>
+      </div>
+      <div class="worked-body">
+        <div class="worked-step">
+          <span class="ws-label">Given</span>
+          <div>P(H) = 0.9, P(T) = 0.1</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Values</span>
+          <div>log₂(0.9) ≈ −0.152 &nbsp;&nbsp; log₂(0.1) ≈ −3.32</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Apply</span>
+          <div>H = −[0.9×(−0.152) + 0.1×(−3.32)]<br>= −[−0.1368 − 0.332] = −[−0.4688] ≈ <strong>0.469 bits</strong></div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Conclusion</span>
+          <div>Biased coin (more predictable) → <strong>LOWER</strong> entropy than fair coin ✓</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="worked-wrap">
+      <div class="worked-toggle" onclick="toggleWorked(this)">
+        📝 Example 3: Word Distribution (cat/dog/cow) <span>▾ Show</span>
+      </div>
+      <div class="worked-body">
+        <div class="worked-step">
+          <span class="ws-label">Given</span>
+          <div>P(cat)=0.5, P(dog)=0.3, P(cow)=0.2</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Values</span>
+          <div>log₂(0.5)=−1 &nbsp; log₂(0.3)≈−1.737 &nbsp; log₂(0.2)≈−2.322</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Apply</span>
+          <div>H = −[0.5(−1) + 0.3(−1.737) + 0.2(−2.322)]<br>= −[−0.5 − 0.5211 − 0.4644]<br>= −[−1.4855] ≈ <strong>1.49 bits</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="important-box">
+      <div class="imp-label">⚠️ Key Property</div>
+      Entropy is <strong>maximum</strong> when all outcomes are equally likely. It is <strong>zero</strong> when one outcome has probability 1 (certainty = no uncertainty).
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-label">🎯 Exam Tip</div>
+      Always remember: <strong>Entropy = Uncertainty</strong>. Low entropy = model is confident. High entropy = model is confused. This connects directly to Perplexity (Topic 11).
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 8 ══════════════ -->
+<div class="topic-section" id="t8">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">08</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Collocations</div>
+      <div class="topic-subtitle">Words that love to be together</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <div class="definition-box">
+      <div class="def-label">Definition</div>
+      <p>Collocations are pairs (or groups) of words that <strong>frequently occur together</strong> as a fixed expression. You can't just swap one word for a synonym!</p>
+    </div>
+
+    <div class="example-box">
+      <div class="ex-label">Examples</div>
+      <p>✅ <code>Strong tea</code> — we say this</p>
+      <p>❌ <code>Powerful tea</code> — sounds wrong, even though "strong" and "powerful" are synonyms</p>
+      <p>✅ <code>Fast food</code> — collocation</p>
+      <p>❌ <code>Quick food</code> — doesn't sound natural</p>
+      <p>✅ <code>Make a decision</code> — not "do a decision"</p>
+    </div>
+
+    <h3>Why Collocations Matter in NLP</h3>
+    <ul class="step-list">
+      <li>Auto-complete (Gmail, WhatsApp) predicts likely next words using collocations</li>
+      <li>Machine translation must respect natural pairings, not just translate word-by-word</li>
+      <li>Text generation sounds natural only when it respects collocation patterns</li>
+    </ul>
+
+    <div class="tip-box">
+      <div class="tip-label">🎯 Exam Tip</div>
+      Collocations are identified statistically — words that appear together <em>far more often than chance would predict</em>. This links to N-gram models.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 9 ══════════════ -->
+<div class="topic-section" id="t9">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">09</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">N-gram Language Models</div>
+      <div class="topic-subtitle">Predicting the next word with probability</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <div class="definition-box">
+      <div class="def-label">N-gram</div>
+      <p>A sequence of <strong>N consecutive words</strong>. We use the last N−1 words to predict what comes next.</p>
+    </div>
+
+    <table class="styled-table">
+      <tr><th>Type</th><th>N</th><th>Example from "I am fine"</th></tr>
+      <tr><td>Unigram</td><td>1</td><td>I / am / fine</td></tr>
+      <tr><td>Bigram</td><td>2</td><td>(I am) / (am fine)</td></tr>
+      <tr><td>Trigram</td><td>3</td><td>(I am fine)</td></tr>
+    </table>
+
+    <h3>How Bigram Prediction Works</h3>
+    <div class="example-box">
+      <div class="ex-label">Sentence: "I am learning NLP"</div>
+      <p>Bigrams extracted: (I → am) → (am → learning) → (learning → NLP)</p>
+      <p>So if someone types "I am going to ___", the model looks at "going to" and predicts most likely next word → e.g., "school".</p>
+    </div>
+
+    <div class="formula-box">
+      <div class="formula-label">Bigram Probability Formula</div>
+      <div class="formula-text">P(wn | wn-1) = Count(wn-1, wn)
+              ────────────────
+                Count(wn-1)
+
+Read as: "Probability of word wn
+given the previous word wn-1"</div>
+    </div>
+
+    <div class="worked-wrap">
+      <div class="worked-toggle" onclick="toggleWorked(this)">
+        📝 Worked Example: P(am | I) <span>▾ Show</span>
+      </div>
+      <div class="worked-body">
+        <div class="worked-step">
+          <span class="ws-label">Given</span>
+          <div>"I am" appears <strong>20 times</strong>. "I" appears <strong>25 times</strong>.</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Apply</span>
+          <div>P(am | I) = Count("I am") ÷ Count("I") = 20 ÷ 25 = <strong>0.8</strong></div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Meaning</span>
+          <div>There is an <strong>80% chance</strong> that "am" follows "I".</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Advantages &amp; Disadvantages</h3>
+    <div class="compare-row">
+      <div class="compare-side good">
+        <div class="cs-label">✅ Advantages</div>
+        Simple to implement. Fast. Works well for short-range predictions.
+      </div>
+      <div class="compare-side bad">
+        <div class="cs-label">❌ Disadvantages</div>
+        Ignores long-distance context. Needs huge data. Memory intensive.
+      </div>
+    </div>
+
+    <div class="important-box">
+      <div class="imp-label">⚠️ Problem with N-grams</div>
+      "The book that I bought yesterday was very ___" — N-gram only looks at nearby words. It misses that the subject "book" is far back in the sentence. This is the <strong>long-distance dependency problem</strong>.
+    </div>
+
+    <div class="quiz-section">
+      <h4>Quick Check ✓</h4>
+      <div class="quiz-q">
+        <p>In a training corpus, "play cricket" appears 15 times and "play" appears 50 times. What is P(cricket | play)?</p>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="answer(this, false)">0.5</button>
+          <button class="quiz-opt" onclick="answer(this, true)">0.3</button>
+          <button class="quiz-opt" onclick="answer(this, false)">0.15</button>
+          <button class="quiz-opt" onclick="answer(this, false)">3.3</button>
+        </div>
+        <div class="quiz-feedback ok">✓ Correct! P(cricket|play) = 15/50 = 0.3 → 30% chance.</div>
+        <div class="quiz-feedback no">Use the formula: Count("play cricket") ÷ Count("play") = 15 ÷ 50 = 0.3</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 10 ══════════════ -->
+<div class="topic-section" id="t10">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">10</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Parameter Estimation &amp; Smoothing</div>
+      <div class="topic-subtitle">The zero probability problem &amp; how to fix it</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <h3>The Zero Probability Problem</h3>
+    <div class="important-box">
+      <div class="imp-label">⚠️ Critical Problem</div>
+      If a word combination never appeared in training data → its count = 0 → probability = 0 → the <em>entire sentence probability becomes 0</em>. This is called the <strong>Zero Probability Problem</strong>.
+    </div>
+
+    <div class="example-box">
+      <div class="ex-label">Example</div>
+      <p>Training data never contains the phrase "I love pizza".</p>
+      <p>So Count("love pizza") = 0 → P(pizza | love) = 0/count = 0</p>
+      <p>Then: P("I love pizza") = P(I) × P(love|I) × <strong>0</strong> = <strong>0</strong></p>
+      <p>The model says this sentence is <em>impossible</em>. That's wrong!</p>
+    </div>
+
+    <h3>Solution: Add-One (Laplace) Smoothing</h3>
+    <div class="definition-box">
+      <div class="def-label">Laplace Smoothing</div>
+      <p>Add 1 to every word count — even words that never appeared. This ensures no probability is ever exactly zero.</p>
+    </div>
+
+    <div class="formula-box">
+      <div class="formula-label">Laplace Smoothing Formula</div>
+      <div class="formula-text">P(word | context) =  Count(context, word) + 1
+                    ─────────────────────────────
+                      Count(context) + Vocabulary Size</div>
+    </div>
+
+    <div class="worked-wrap">
+      <div class="worked-toggle" onclick="toggleWorked(this)">
+        📝 Worked Example: Smoothing <span>▾ Show</span>
+      </div>
+      <div class="worked-body">
+        <div class="worked-step">
+          <span class="ws-label">Given</span>
+          <div>Count("I love") = 0, Total bigrams = 10, Vocabulary size = 5</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Without Smoothing</span>
+          <div>P = 0/10 = <strong>0</strong> ← Problem!</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">With Smoothing</span>
+          <div>P = (0+1) / (10+5) = 1/15 ≈ <strong>0.067</strong> ← Small but NOT zero ✓</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Benefit</span>
+          <div>The model can now handle new word combinations it never saw in training.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-label">🎯 Exam Tip</div>
+      Smoothing types you should know: (1) <strong>Add-One / Laplace</strong> — simplest; adds 1 to all counts. (2) <strong>Good-Turing</strong> — more advanced, redistributes probability. For BSc level, Laplace is sufficient.
+    </div>
+
+    <div class="quiz-section">
+      <h4>Quick Check ✓</h4>
+      <div class="quiz-q">
+        <p>Why is zero probability a problem in N-gram models?</p>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="answer(this, false)">It makes computation slower</button>
+          <button class="quiz-opt" onclick="answer(this, true)">One zero makes the entire sentence probability zero</button>
+          <button class="quiz-opt" onclick="answer(this, false)">It increases entropy</button>
+        </div>
+        <div class="quiz-feedback ok">✓ Exactly! In N-gram models, probabilities are multiplied. Any zero term makes the whole product zero — making valid sentences appear impossible.</div>
+        <div class="quiz-feedback no">The key issue: sentence probability = product of word probabilities. Multiply any number by 0 and you get 0.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 11 ══════════════ -->
+<div class="topic-section" id="t11">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">11</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Evaluating Language Models</div>
+      <div class="topic-subtitle">Perplexity — the gold standard metric</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <p>How do we know if our language model is good? We measure it!</p>
+
+    <h3>Metric 1: Perplexity</h3>
+    <div class="definition-box">
+      <div class="def-label">Perplexity</div>
+      <p>Perplexity measures <strong>how confused the model is</strong> when predicting words. Think of it as: "how many words is the model choosing between at each step?"</p>
+    </div>
+
+    <div class="example-box">
+      <div class="ex-label">Classroom Analogy</div>
+      <p>Imagine a multiple-choice test:</p>
+      <p>• 2 options → Easy → low confusion → <strong>low perplexity</strong> ✅</p>
+      <p>• 100 options → Hard → high confusion → <strong>high perplexity</strong> ❌</p>
+      <p><strong>Lower perplexity = better language model</strong></p>
+    </div>
+
+    <div class="formula-box">
+      <div class="formula-label">Perplexity Formula</div>
+      <div class="formula-text">Perplexity = 2^H(X)
+
+where H(X) = entropy of the model
+
+Also: PP(W) = P(w1, w2, ..., wN)^(−1/N)</div>
+    </div>
+
+    <div class="worked-wrap">
+      <div class="worked-toggle" onclick="toggleWorked(this)">
+        📝 Worked Example 1: Entropy → Perplexity <span>▾ Show</span>
+      </div>
+      <div class="worked-body">
+        <div class="worked-step">
+          <span class="ws-label">Given</span>
+          <div>Language model has entropy H(X) = 2 bits</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Apply</span>
+          <div>Perplexity = 2^H(X) = 2^2 = <strong>4</strong></div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Meaning</span>
+          <div>The model behaves as if choosing between <strong>4 possible words</strong> at each step.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="worked-wrap">
+      <div class="worked-toggle" onclick="toggleWorked(this)">
+        📝 Worked Example 2: Sentence Perplexity <span>▾ Show</span>
+      </div>
+      <div class="worked-body">
+        <div class="worked-step">
+          <span class="ws-label">Given</span>
+          <div>Sentence "I love natural language processing" → N = 5 words<br>P(sentence) = 0.2×0.5×0.4×0.6×0.5 = 0.012</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Apply</span>
+          <div>PP = P(W)^(−1/N) = (0.012)^(−1/5)</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Answer</span>
+          <div>PP ≈ <strong>2.41</strong> → Model chooses between ~2.4 words per step. Good!</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="worked-wrap">
+      <div class="worked-toggle" onclick="toggleWorked(this)">
+        📝 Worked Example 3: P(W) = 0.008, N = 4 <span>▾ Show</span>
+      </div>
+      <div class="worked-body">
+        <div class="worked-step">
+          <span class="ws-label">Given</span>
+          <div>P(W) = 0.008, N = 4 words</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Apply</span>
+          <div>PP = (0.008)^(−1/4) = (0.008)^(−0.25)</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Answer</span>
+          <div>PP ≈ <strong>3.34</strong> → Model choosing between ~3.3 words per step.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Metric 2: Accuracy</h3>
+    <p>In next-word prediction: how often does the model predict the <em>correct</em> word? Used for chatbots (response quality), autocomplete (accuracy), speech recognition (error rate).</p>
+
+    <div class="memory-box">
+      <div class="mem-title">The Golden Rule of Language Models</div>
+      <div class="mem-content">Lower Perplexity = Better Language Model</div>
+      <p style="margin-top:8px;font-size:13px;color:rgba(255,255,255,0.6)">Perplexity = 2^H(X) · Entropy = −Σ P(x)log₂P(x)</p>
+    </div>
+
+    <div class="quiz-section">
+      <h4>Final Quiz — Unit 1</h4>
+      <div class="quiz-q">
+        <p>If Model A has perplexity 50 and Model B has perplexity 20, which is better?</p>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="answer(this, false)">Model A (higher perplexity is better)</button>
+          <button class="quiz-opt" onclick="answer(this, true)">Model B (lower perplexity is better)</button>
+          <button class="quiz-opt" onclick="answer(this, false)">Both are equal</button>
+        </div>
+        <div class="quiz-feedback ok">✓ Correct! Lower perplexity = less confused model = better predictions. Model B wins!</div>
+        <div class="quiz-feedback no">Remember: Lower Perplexity = Better Model. Model B with 20 is less confused than Model A with 50.</div>
+      </div>
+    </div>
+
+    <h3>Summary — Unit 1 Key Concepts</h3>
+    <table class="styled-table">
+      <tr><th>Concept</th><th>One-line Definition</th></tr>
+      <tr><td>NLP</td><td>AI that understands human language</td></tr>
+      <tr><td>Syntax</td><td>Grammar structure of sentences</td></tr>
+      <tr><td>Semantics</td><td>Meaning of words</td></tr>
+      <tr><td>Pragmatics</td><td>Meaning in real context</td></tr>
+      <tr><td>Probability</td><td>Likelihood of a word occurring</td></tr>
+      <tr><td>Entropy H(X)</td><td>Measure of uncertainty/randomness</td></tr>
+      <tr><td>Collocation</td><td>Words that naturally go together</td></tr>
+      <tr><td>N-gram</td><td>Sequence of N words for prediction</td></tr>
+      <tr><td>Smoothing</td><td>Fix for zero probability problem</td></tr>
+      <tr><td>Perplexity</td><td>How confused the model is (lower = better)</td></tr>
+    </table>
+  </div>
+</div>
+
+</main>
+
+<footer class="unit-footer">
+  <h3>Unit 1 Complete! 🎉</h3>
+  <p>You've covered: NLP basics, Syntax/Semantics/Pragmatics, Entropy, N-grams, Smoothing, and Perplexity.</p>
+  <a href="unit2_nlp.html" class="next-unit-btn">→ Go to Unit 2: Linguistic Essentials</a>
+</footer>
+
+<script>
+  // ── ACCORDION ──
+  function toggle(header) {
+    const body = header.nextElementSibling;
+    const isOpen = header.classList.contains('open');
+    // Close all
+    document.querySelectorAll('.topic-header.open').forEach(h => {
+      h.classList.remove('open');
+      h.nextElementSibling.style.display = 'none';
+    });
+    if (!isOpen) {
+      header.classList.add('open');
+      body.style.display = 'block';
+      setTimeout(() => header.scrollIntoView({behavior:'smooth', block:'start'}), 50);
+    }
+  }
+
+  // ── WORKED EXAMPLES ──
+  function toggleWorked(toggle) {
+    const body = toggle.nextElementSibling;
+    const span = toggle.querySelector('span');
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    span.textContent = isOpen ? '▾ Show' : '▴ Hide';
+  }
+
+  // ── QUIZ ──
+  function answer(btn, correct) {
+    const opts = btn.closest('.quiz-options');
+    if (opts.dataset.answered) return;
+    opts.dataset.answered = '1';
+    const feedbacks = btn.closest('.quiz-q').querySelectorAll('.quiz-feedback');
+    btn.classList.add(correct ? 'correct' : 'wrong');
+    feedbacks[correct ? 1 : 0].classList.add('show');
+    feedbacks[correct ? 1 : 0].style.display = 'block';
+  }
+
+  // ── PROGRESS BAR ──
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.body.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    document.getElementById('progress-bar').style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateProgress, {passive: true});
+
+  // ── ACTIVE NAV ──
+  const sections = document.querySelectorAll('.topic-section');
+  const navLinks = document.querySelectorAll('.topic-nav a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 120) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }, {passive: true});
+</script>
+</body>
+</html>
