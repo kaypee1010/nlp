@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit 2 – Linguistic Essentials | BSc 2nd Sem NLP</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lora:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1c2340;
+    --teal: #0e8a7a;
+    --teal-light: #e4f5f3;
+    --amber: #d97706;
+    --amber-light: #fff8e6;
+    --rose: #be3a4a;
+    --rose-light: #fdf0f2;
+    --purple: #6b4fa0;
+    --purple-light: #f0ecf8;
+    --cream: #faf8f4;
+    --white: #ffffff;
+    --text: #2c2c3e;
+    --muted: #6b7280;
+    --border: #e8e2d8;
+    --formula-bg: #1c2340;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Lora', Georgia, serif;
+    background: var(--cream);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  #progress-bar {
+    position: fixed; top: 0; left: 0; height: 4px;
+    background: linear-gradient(90deg, var(--teal), var(--amber));
+    z-index: 9999; transition: width 0.3s ease; width: 0%;
+  }
+
+  .site-header {
+    background: var(--ink);
+    color: white;
+    padding: 48px 20px 36px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .site-header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 20% 60%, rgba(14,138,122,0.2), transparent 55%),
+                radial-gradient(ellipse at 75% 20%, rgba(107,79,160,0.15), transparent 50%);
+  }
+  .header-badge {
+    display: inline-block;
+    background: var(--teal);
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+  .site-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 7vw, 40px);
+    font-weight: 900;
+    line-height: 1.2;
+    position: relative;
+  }
+  .site-header p {
+    color: rgba(255,255,255,0.65);
+    margin-top: 10px;
+    font-size: 14px;
+    font-style: italic;
+    position: relative;
+  }
+  .back-link {
+    display: inline-block;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .topic-nav {
+    position: sticky; top: 4px; z-index: 100;
+    background: rgba(250,248,244,0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .topic-nav::-webkit-scrollbar { display: none; }
+  .topic-nav a {
+    display: inline-block;
+    background: white;
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-right: 6px;
+    transition: all 0.2s;
+  }
+  .topic-nav a:hover, .topic-nav a.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: white;
+  }
+
+  /* Flow Indicator */
+  .flow-banner {
+    background: var(--ink);
+    color: white;
+    padding: 14px 20px;
+    font-size: 13px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .flow-banner::-webkit-scrollbar { display: none; }
+  .flow-banner span { color: var(--teal); margin: 0 4px; }
+
+  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  .topic-section {
+    background: white;
+    border-radius: 16px;
+    border: 1.5px solid var(--border);
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(28,35,64,0.05);
+    scroll-margin-top: 60px;
+  }
+  .topic-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.2s;
+  }
+  .topic-header:hover { background: #faf7f2; }
+  .topic-header.open { background: var(--ink); color: white; }
+
+  .topic-num {
+    width: 36px; height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+    background: var(--teal-light);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .topic-header.open .topic-num { background: rgba(255,255,255,0.15); color: white; }
+
+  .topic-title-wrap { flex: 1; }
+  .topic-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .topic-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 2px;
+  }
+  .topic-header.open .topic-subtitle { color: rgba(255,255,255,0.6); }
+  .topic-arrow { font-size: 20px; transition: transform 0.3s; color: var(--muted); }
+  .topic-header.open .topic-arrow { transform: rotate(180deg); color: white; }
+
+  /* Limitation tag on header */
+  .limits-tag {
+    background: var(--rose);
+    color: white;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.5px;
+  }
+  .topic-header.open .limits-tag { background: rgba(255,255,255,0.2); }
+
+  .topic-body {
+    display: none;
+    padding: 20px;
+    border-top: 1.5px solid var(--border);
+    animation: slideDown 0.25s ease;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Content */
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--ink);
+    margin: 20px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid var(--teal);
+  }
+  h3:first-child { margin-top: 0; }
+  h4 { font-size: 15px; font-weight: 600; color: var(--ink); margin: 14px 0 6px; }
+  p { margin-bottom: 12px; }
+  p:last-child { margin-bottom: 0; }
+
+  .definition-box {
+    background: var(--ink);
+    color: white;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin: 14px 0;
+  }
+  .definition-box .def-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--teal);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .definition-box p { margin: 0; font-size: 15px; }
+
+  .formula-box {
+    background: var(--formula-bg);
+    border-radius: 10px;
+    padding: 16px;
+    margin: 14px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .formula-box .formula-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+  .formula-box .formula-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: #7ef0c0;
+    line-height: 1.9;
+    white-space: pre;
+  }
+
+  .tip-box {
+    background: var(--amber-light);
+    border-left: 4px solid var(--amber);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 14.5px;
+  }
+  .tip-box .tip-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--amber);
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .limitation-box {
+    background: var(--rose-light);
+    border-left: 4px solid var(--rose);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 14.5px;
+  }
+  .limitation-box .lim-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--rose);
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .why-box {
+    background: var(--teal-light);
+    border-left: 4px solid var(--teal);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 14.5px;
+  }
+  .why-box .why-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--teal);
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .example-box {
+    background: var(--purple-light);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 12px 0;
+    font-size: 14.5px;
+    border: 1px solid #d4c8f0;
+  }
+  .example-box .ex-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--purple);
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .example-box code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(107,79,160,0.12);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #4a2d80;
+  }
+
+  .styled-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; }
+  .styled-table th {
+    background: var(--ink);
+    color: white;
+    padding: 10px 12px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+  .styled-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  .styled-table tr:nth-child(even) td { background: #fafaf8; }
+  .styled-table tr:last-child td { border-bottom: none; }
+
+  .step-list { counter-reset: steps; list-style: none; padding: 0; margin: 12px 0; }
+  .step-list li {
+    counter-increment: steps;
+    display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    min-width: 28px; height: 28px;
+    background: var(--teal);
+    color: white;
+    border-radius: 50%;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 2px;
+  }
+
+  /* Pro / Con compare */
+  .compare-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0;
+  }
+  .compare-side { border-radius: 10px; padding: 12px 14px; font-size: 14px; }
+  .compare-side.good { background: var(--teal-light); border: 1.5px solid #8dd4cc; }
+  .compare-side.bad { background: var(--rose-light); border: 1.5px solid #f0b0ba; }
+  .compare-side .cs-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  .compare-side.good .cs-label { color: var(--teal); }
+  .compare-side.bad .cs-label { color: var(--rose); }
+
+  /* HMM State diagram */
+  .hmm-diagram {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; margin: 16px 0;
+  }
+  .hmm-row { display: flex; gap: 10px; align-items: center; }
+  .hmm-state {
+    border-radius: 8px; padding: 8px 14px;
+    font-size: 13px; font-family: 'JetBrains Mono', monospace;
+    text-align: center; min-width: 80px;
+  }
+  .hmm-hidden { background: var(--ink); color: white; border: 2px solid var(--teal); }
+  .hmm-observed { background: var(--purple-light); color: var(--ink); border: 2px solid var(--purple); }
+  .hmm-arrow { font-size: 16px; color: var(--teal); }
+  .hmm-down { font-size: 18px; color: var(--amber); }
+  .hmm-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 12px; font-weight: 600;
+  }
+  .hmm-label.h { background: var(--ink); color: var(--teal); }
+  .hmm-label.o { background: var(--purple); color: white; }
+
+  /* FST box */
+  .fst-box {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; flex-wrap: nowrap; margin: 14px 0;
+    overflow-x: auto;
+  }
+  .fst-cell {
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+    min-width: 70px;
+    font-size: 14px;
+  }
+  .fst-cell.machine {
+    background: var(--ink); color: white;
+    border-color: var(--teal);
+    min-width: 100px;
+  }
+  .fst-cell .small { font-size: 11px; color: var(--muted); }
+  .fst-cell.machine .small { color: var(--teal); }
+  .fst-arrow { font-size: 22px; color: var(--teal); padding: 0 6px; }
+
+  /* Markov chain */
+  .markov-chain {
+    display: flex; align-items: center;
+    overflow-x: auto; gap: 0;
+    padding: 10px 0; margin: 12px 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mc-node {
+    min-width: 70px; height: 70px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-align: center;
+    border: 3px solid var(--teal);
+    flex-shrink: 0;
+  }
+  .mc-edge {
+    display: flex; flex-direction: column;
+    align-items: center; padding: 0 4px; flex-shrink: 0;
+  }
+  .mc-prob {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--amber);
+    margin-bottom: 2px;
+  }
+  .mc-line {
+    width: 40px; height: 2px;
+    background: var(--muted);
+    position: relative;
+  }
+  .mc-line::after {
+    content: '▶';
+    position: absolute; right: -8px; top: -8px;
+    color: var(--muted); font-size: 12px;
+  }
+
+  /* Quiz */
+  .quiz-section {
+    background: var(--ink);
+    color: white;
+    border-radius: 12px;
+    padding: 18px;
+    margin: 20px 0 0;
+  }
+  .quiz-section h4 { color: var(--teal); font-family: 'Playfair Display', serif; font-size: 17px; margin-bottom: 14px; }
+  .quiz-q { margin-bottom: 14px; font-size: 14.5px; }
+  .quiz-q p { margin-bottom: 8px; font-style: italic; color: rgba(255,255,255,0.9); }
+  .quiz-options { display: flex; flex-direction: column; gap: 7px; }
+  .quiz-opt {
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    color: white;
+    padding: 9px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: left;
+    transition: all 0.2s;
+    font-family: 'Lora', serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .quiz-opt:hover { background: rgba(255,255,255,0.14); }
+  .quiz-opt.correct { background: rgba(42,180,100,0.3); border-color: #2ab464; }
+  .quiz-opt.wrong { background: rgba(220,60,40,0.3); border-color: #dc3c28; }
+  .quiz-feedback { font-size: 13px; margin-top: 6px; padding: 6px 10px; border-radius: 6px; display: none; }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.ok { background: rgba(42,180,100,0.2); color: #90efc0; }
+  .quiz-feedback.no { background: rgba(220,60,40,0.2); color: #ffb0a0; }
+
+  .worked-wrap { border: 1.5px solid var(--border); border-radius: 10px; overflow: hidden; margin: 14px 0; }
+  .worked-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--teal-light);
+    cursor: pointer;
+    font-size: 14px; font-weight: 600; color: var(--ink);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .worked-body { display: none; padding: 14px 16px; font-size: 14px; background: white; }
+  .worked-body.open { display: block; }
+  .worked-step {
+    display: flex; gap: 10px; margin-bottom: 10px;
+    padding-bottom: 10px; border-bottom: 1px dashed var(--border);
+  }
+  .worked-step:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .ws-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--teal); min-width: 52px;
+    padding-top: 2px; font-weight: 600;
+  }
+
+  .memory-box {
+    background: linear-gradient(135deg, var(--ink), #2d3a6a);
+    color: white; border-radius: 12px; padding: 16px 18px;
+    margin: 14px 0; text-align: center;
+  }
+  .memory-box .mem-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--teal); letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  .memory-box .mem-content {
+    font-family: 'Playfair Display', serif; font-size: 16px; line-height: 1.6;
+  }
+
+  /* Evolution chain */
+  .evolution-chain {
+    display: flex; flex-direction: column; gap: 0;
+    align-items: stretch; margin: 14px 0;
+  }
+  .evo-step {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 14px;
+    position: relative;
+  }
+  .evo-step .evo-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600;
+    color: var(--teal); margin-bottom: 4px;
+  }
+  .evo-step .evo-limit {
+    font-size: 12px; color: var(--rose); margin-top: 6px;
+    padding: 4px 8px; background: var(--rose-light);
+    border-radius: 6px; display: inline-block;
+  }
+  .evo-arrow {
+    text-align: center; font-size: 20px; color: var(--teal);
+    padding: 4px 0; line-height: 1;
+  }
+
+  .unit-footer {
+    background: var(--ink); color: white;
+    padding: 28px 20px; text-align: center; margin-top: 40px;
+  }
+  .unit-footer h3 { font-family: 'Playfair Display', serif; color: var(--teal); border: none; margin-bottom: 8px; }
+  .unit-footer p { font-size: 14px; color: rgba(255,255,255,0.7); }
+  .back-btn {
+    display: inline-block; background: var(--teal);
+    color: white; padding: 12px 28px; border-radius: 30px;
+    text-decoration: none; font-weight: 700; font-size: 15px; margin-top: 16px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .back-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(14,138,122,0.4); }
+
+  @media (max-width: 400px) {
+    .compare-row { grid-template-columns: 1fr; }
+    .formula-box .formula-text { font-size: 11.5px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<header class="site-header">
+  <a href="unit1_nlp.html" class="back-link">← Unit 1: Intro to NLP</a>
+  <div class="header-badge">BSc 2nd Semester · NLP</div>
+  <h1>Unit 2: Linguistic Essentials</h1>
+  <p>8 lectures · From words to intelligent tagging</p>
+</header>
+
+<div class="flow-banner">
+  Lexical <span>→</span> Morphology <span>→</span> FST <span>→</span> POS <span>→</span> Rule-Based <span>→</span> Markov <span>→</span> HMM <span>→</span> TBL <span>→</span> MaxEnt <span>→</span> CRF
+</div>
+
+<nav class="topic-nav" id="topicNav">
+  <a href="#t1">Lexical</a>
+  <a href="#t2">Morphology</a>
+  <a href="#t3">FST</a>
+  <a href="#t4">POS Tagging</a>
+  <a href="#t5">Rule-Based</a>
+  <a href="#t6">Markov</a>
+  <a href="#t7">HMM</a>
+  <a href="#t8">TBL</a>
+  <a href="#t9">MaxEnt</a>
+  <a href="#t10">CRF</a>
+</nav>
+
+<main>
+
+<!-- ══════════════ TOPIC 1 ══════════════ -->
+<div class="topic-section" id="t1">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">01</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Lexical Syntax</div>
+      <div class="topic-subtitle">The building blocks of words</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <div class="why-box">
+      <div class="why-label">Why do we start here?</div>
+      Before processing sentences, a computer must understand individual words. Lexical syntax is the very first step.
+    </div>
+
+    <div class="definition-box">
+      <div class="def-label">Lexical Syntax</div>
+      <p>The study of words and their structure — what are the words, how are they formed, and what is their basic meaning.</p>
+    </div>
+
+    <h3>Breaking Down a Word</h3>
+    <div class="example-box">
+      <div class="ex-label">Example: "Unhappiness"</div>
+      <p><code>Un</code> → prefix meaning "not"</p>
+      <p><code>happy</code> → root word (base meaning)</p>
+      <p><code>ness</code> → suffix meaning "state of"</p>
+      <p>Combined: "state of not being happy"</p>
+    </div>
+
+    <div class="example-box">
+      <div class="ex-label">More Examples</div>
+      <p><code>re + play + ing</code> → replaying</p>
+      <p><code>un + break + able</code> → unbreakable</p>
+      <p><code>pre + heat</code> → preheat</p>
+    </div>
+
+    <div class="limitation-box">
+      <div class="lim-label">⚠️ Limitation</div>
+      Knowing individual word structures is not enough. We still don't know grammar or how words relate to each other in a sentence. That's where Morphology comes in.
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-label">🎯 Exam Tip</div>
+      Lexical syntax answers: (1) What is the word? (2) How is it formed? (3) What is its basic meaning? — Know these three questions!
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 2 ══════════════ -->
+<div class="topic-section" id="t2">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">02</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Morphology</div>
+      <div class="topic-subtitle">How words change their form</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <div class="why-box">
+      <div class="why-label">Why needed?</div>
+      Words have multiple forms: play, playing, played, plays. A computer must know these are all the SAME word — just different forms.
+    </div>
+
+    <div class="definition-box">
+      <div class="def-label">Morphology</div>
+      <p>The study of the <strong>internal structure of words</strong> and how words are built from smaller units (morphemes).</p>
+    </div>
+
+    <h3>Two Types of Morphology</h3>
+    <table class="styled-table">
+      <tr><th>Type</th><th>What it does</th><th>Example</th></tr>
+      <tr>
+        <td><strong>Inflectional</strong></td>
+        <td>Changes tense, number, person — same base meaning</td>
+        <td>play → played → playing → plays</td>
+      </tr>
+      <tr>
+        <td><strong>Derivational</strong></td>
+        <td>Creates an entirely new word with new meaning</td>
+        <td>happy → happiness → unhappy → unhappiness</td>
+      </tr>
+    </table>
+
+    <div class="example-box">
+      <div class="ex-label">Real-Life Analogy</div>
+      <p>Think of a word as a family. <code>play</code>, <code>playing</code>, <code>played</code>, <code>player</code> are all from the same family. Morphology is the family tree of words.</p>
+    </div>
+
+    <h3>Why Morphology Matters in NLP</h3>
+    <ol class="step-list">
+      <li><strong>Stemming</strong> — Reduces vocabulary size by mapping words to their root: "running" → "run"</li>
+      <li><strong>Lemmatization</strong> — More accurate root finding: "better" → "good"</li>
+      <li><strong>Better search</strong> — Search for "run" should find "running", "ran", "runner"</li>
+    </ol>
+
+    <div class="limitation-box">
+      <div class="lim-label">⚠️ Limitation</div>
+      Morphology tells us about word structure but NOT about how words flow in a sequence. We need a model for that — leading to FST and then probabilistic models.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 3 ══════════════ -->
+<div class="topic-section" id="t3">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">03</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Finite State Transducers (FST)</div>
+      <div class="topic-subtitle">A machine that converts one word form to another</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <div class="why-box">
+      <div class="why-label">Problem it solves</div>
+      How do we automatically convert: <strong>go → went</strong>, <strong>play → played</strong>, <strong>run → running</strong>? We need a systematic rule machine.
+    </div>
+
+    <div class="definition-box">
+      <div class="def-label">Finite State Transducer (FST)</div>
+      <p>A machine that takes an <strong>input word</strong> and produces an <strong>output word</strong> based on rules. It maps one linguistic form to another.</p>
+    </div>
+
+    <h3>How FST Works</h3>
+    <div class="fst-box">
+      <div class="fst-cell">
+        <div><strong>"play"</strong></div>
+        <div class="small">Input</div>
+      </div>
+      <div class="fst-arrow">→</div>
+      <div class="fst-cell machine">
+        <div>FST</div>
+        <div class="small">+ "ing" rule</div>
+      </div>
+      <div class="fst-arrow">→</div>
+      <div class="fst-cell">
+        <div><strong>"playing"</strong></div>
+        <div class="small">Output</div>
+      </div>
+    </div>
+
+    <div class="example-box">
+      <div class="ex-label">More FST Examples</div>
+      <p><code>happy</code> + [add 'ness'] → <code>happiness</code></p>
+      <p><code>run</code> + [double consonant + ing] → <code>running</code></p>
+      <p><code>go</code> + [irregular past] → <code>went</code></p>
+    </div>
+
+    <h3>Real-Life Analogy</h3>
+    <div class="example-box">
+      <div class="ex-label">Like a Vending Machine</div>
+      <p>Input: Insert coin (word)</p>
+      <p>Rule: Machine processes it</p>
+      <p>Output: Get snack (transformed word)</p>
+      <p>→ FST is a word-transformation machine!</p>
+    </div>
+
+    <h3>Use in NLP</h3>
+    <div class="compare-row">
+      <div class="compare-side good">
+        <div class="cs-label">✅ Uses</div>
+        Spell correction, morphological analysis, word form generation
+      </div>
+      <div class="compare-side bad">
+        <div class="cs-label">❌ Limitation</div>
+        Works only on fixed rules. Cannot handle uncertainty or ambiguity.
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-label">🎯 Exam Tip</div>
+      FST = Input word → Rules → Output word. It's a two-level model: surface form (what we see) ↔ lexical form (dictionary form). Used in morphological analysis.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 4 ══════════════ -->
+<div class="topic-section" id="t4">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">04</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Part-of-Speech (POS) Tagging</div>
+      <div class="topic-subtitle">Labelling every word's grammatical role</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <div class="why-box">
+      <div class="why-label">The Problem</div>
+      The word "play" can be a <strong>verb</strong> ("I play cricket") or a <strong>noun</strong> ("Let's watch a play"). The computer must decide which one — based on context.
+    </div>
+
+    <div class="definition-box">
+      <div class="def-label">POS Tagging</div>
+      <p>Assigning a grammatical label (<em>Noun, Verb, Adjective, etc.</em>) to every word in a sentence based on its role in that sentence.</p>
+    </div>
+
+    <h3>POS Tags Reference</h3>
+    <table class="styled-table">
+      <tr><th>Tag</th><th>Full Name</th><th>Example Word</th></tr>
+      <tr><td>NN</td><td>Noun</td><td>boy, school, India</td></tr>
+      <tr><td>VB</td><td>Verb</td><td>runs, eats, plays</td></tr>
+      <tr><td>JJ</td><td>Adjective</td><td>beautiful, tall, fast</td></tr>
+      <tr><td>RB</td><td>Adverb</td><td>quickly, silently</td></tr>
+      <tr><td>DT</td><td>Determiner</td><td>the, a, an</td></tr>
+      <tr><td>IN</td><td>Preposition</td><td>in, on, at, of</td></tr>
+      <tr><td>PRP</td><td>Pronoun</td><td>I, he, she, they</td></tr>
+    </table>
+
+    <div class="example-box">
+      <div class="ex-label">POS Tagging Example</div>
+      <p>Sentence: <code>"The boy is playing cricket"</code></p>
+      <p>The → <code>DT</code> (Determiner)</p>
+      <p>boy → <code>NN</code> (Noun)</p>
+      <p>is → <code>VBZ</code> (Verb, 3rd person singular)</p>
+      <p>playing → <code>VBG</code> (Verb, present participle)</p>
+      <p>cricket → <code>NN</code> (Noun)</p>
+    </div>
+
+    <h3>Why POS Tagging is Important</h3>
+    <ol class="step-list">
+      <li>Word sense disambiguation — "bank" as noun = financial, "bank" as verb = store</li>
+      <li>Named entity recognition — proper nouns identify people, places</li>
+      <li>Machine translation — word role changes translation</li>
+      <li>Grammar checking — identifies incorrect sentence structure</li>
+    </ol>
+
+    <div class="tip-box">
+      <div class="tip-label">🎯 Exam Tip</div>
+      POS tagging approaches follow an evolution: Rule-Based → Markov → HMM → TBL → MaxEnt → CRF. Each solves a problem the previous couldn't. Know this sequence!
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 5 ══════════════ -->
+<div class="topic-section" id="t5">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">05</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Rule-Based POS Tagging</div>
+      <div class="topic-subtitle">The if-else approach</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <div class="definition-box">
+      <div class="def-label">Rule-Based POS Tagging</div>
+      <p>Assign POS tags using a large set of hand-written <strong>if-else grammar rules</strong> based on word endings, prefixes, and neighbouring words.</p>
+    </div>
+
+    <h3>How Rules Work</h3>
+    <div class="example-box">
+      <div class="ex-label">Sample Rules</div>
+      <p>Rule 1: If word ends in <code>-ing</code> → Tag as <strong>Verb (VBG)</strong></p>
+      <p>Rule 2: If word ends in <code>-ness</code> → Tag as <strong>Noun (NN)</strong></p>
+      <p>Rule 3: If previous word = <code>"the"</code> → next word is likely a <strong>Noun</strong></p>
+      <p>Rule 4: If word ends in <code>-ly</code> → Tag as <strong>Adverb (RB)</strong></p>
+      <p>Rule 5: If word is in verb list → Tag as <strong>Verb</strong></p>
+    </div>
+
+    <div class="worked-wrap">
+      <div class="worked-toggle" onclick="toggleWorked(this)">
+        📝 Worked Example: Rule-based tagging <span>▾ Show</span>
+      </div>
+      <div class="worked-body">
+        <div class="worked-step">
+          <span class="ws-label">Input</span>
+          <div>"The quickly running dog"</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Rule 1</span>
+          <div>"The" → previous = start → DT (Determiner)</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Rule 2</span>
+          <div>"quickly" → ends in -ly → RB (Adverb)</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Rule 3</span>
+          <div>"running" → ends in -ing → VBG (Verb) ← but context says it's an adjective here!</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Problem</span>
+          <div>Rules don't understand context → "running dog" uses "running" as adjective, not verb. Rules fail here.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="compare-row">
+      <div class="compare-side good">
+        <div class="cs-label">✅ Advantage</div>
+        Simple to understand. Works well for common patterns. No training data needed.
+      </div>
+      <div class="compare-side bad">
+        <div class="cs-label">❌ Limitations</div>
+        Too many rules. Not scalable. Fails on ambiguity. Can't learn new language patterns.
+      </div>
+    </div>
+
+    <div class="quiz-section">
+      <h4>Quick Check ✓</h4>
+      <div class="quiz-q">
+        <p>A rule says: "If word ends in -ed, tag it as past tense verb (VBD)." What would happen with the word "red" (the colour)?</p>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="answer(this, false)">It would be correctly tagged as adjective</button>
+          <button class="quiz-opt" onclick="answer(this, true)">It would be wrongly tagged as a verb</button>
+          <button class="quiz-opt" onclick="answer(this, false)">It would be ignored</button>
+        </div>
+        <div class="quiz-feedback ok">✓ Correct! "red" ends in -ed but it's an adjective. Rule-based systems fail on exceptions like this — showing why smarter approaches are needed.</div>
+        <div class="quiz-feedback no">"red" ends in -ed so the rule would tag it as VBD (past verb) — which is wrong! This is exactly the limitation of rule-based systems.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 6 ══════════════ -->
+<div class="topic-section" id="t6">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">06</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Markov Models</div>
+      <div class="topic-subtitle">Using probability instead of rules</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <div class="why-box">
+      <div class="why-label">Key Insight</div>
+      Instead of hard rules, use probability! The next word likely depends on the current/previous word. This is the Markov assumption.
+    </div>
+
+    <div class="definition-box">
+      <div class="def-label">Markov Model</div>
+      <p>A model where the <strong>probability of the next state depends only on the current state</strong> — not on the history of all previous states. Also called the "Markov assumption" or "memoryless property".</p>
+    </div>
+
+    <div class="formula-box">
+      <div class="formula-label">Markov Assumption</div>
+      <div class="formula-text">P(wn | w1, w2, ..., wn-1)
+      ≈ P(wn | wn-1)
+
+"The next word depends only on the
+ previous word, not the entire history"</div>
+    </div>
+
+    <h3>Markov Chain Example</h3>
+    <div class="markov-chain">
+      <div class="mc-node">The</div>
+      <div class="mc-edge">
+        <div class="mc-prob">P=0.6</div>
+        <div class="mc-line"></div>
+      </div>
+      <div class="mc-node">cat</div>
+      <div class="mc-edge">
+        <div class="mc-prob">P=0.4</div>
+        <div class="mc-line"></div>
+      </div>
+      <div class="mc-node">sat</div>
+      <div class="mc-edge">
+        <div class="mc-prob">P=0.7</div>
+        <div class="mc-line"></div>
+      </div>
+      <div class="mc-node">down</div>
+    </div>
+
+    <div class="example-box">
+      <div class="ex-label">Real-Life Example</div>
+      <p>After the word <code>"the"</code>, what likely comes next?</p>
+      <p>P(dog | the) = 0.15 &nbsp; P(cat | the) = 0.12 &nbsp; P(book | the) = 0.08</p>
+      <p>→ Markov model picks the most probable next word.</p>
+      <p>Contrast: P(run | the) = very low — "the" rarely precedes a verb directly.</p>
+    </div>
+
+    <div class="compare-row">
+      <div class="compare-side good">
+        <div class="cs-label">✅ Advantage over Rules</div>
+        Handles uncertainty. Flexible. Learns from data. More realistic than fixed rules.
+      </div>
+      <div class="compare-side bad">
+        <div class="cs-label">❌ Limitation</div>
+        Only considers visible/current state. Cannot model hidden factors (like POS tags that we don't directly see in raw text).
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-label">🎯 Exam Tip</div>
+      The Markov assumption says: <em>the future depends only on the present, not the past</em>. This is also called "first-order Markov". A second-order Markov model looks at 2 previous words.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 7 ══════════════ -->
+<div class="topic-section" id="t7">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">07</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Hidden Markov Models (HMM)</div>
+      <div class="topic-subtitle">Discovering what's hidden behind what we see</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <div class="why-box">
+      <div class="why-label">The Key Problem</div>
+      We can see the words in a sentence. But we CANNOT directly see the POS tags. The tags are "hidden". HMM solves this!
+    </div>
+
+    <div class="definition-box">
+      <div class="def-label">Hidden Markov Model (HMM)</div>
+      <p>A statistical model where we observe certain outputs (words) but the states that generate them (POS tags) are <strong>hidden</strong>. HMM finds the most likely hidden state sequence.</p>
+    </div>
+
+    <h3>HMM Structure</h3>
+    <div class="hmm-diagram">
+      <div class="hmm-row">
+        <span class="hmm-label h">HIDDEN</span>
+      </div>
+      <div class="hmm-row">
+        <div class="hmm-state hmm-hidden">Noun</div>
+        <div class="hmm-arrow">→</div>
+        <div class="hmm-state hmm-hidden">Verb</div>
+        <div class="hmm-arrow">→</div>
+        <div class="hmm-state hmm-hidden">Noun</div>
+      </div>
+      <div class="hmm-row">
+        <div class="hmm-down">↓</div>
+        <div style="width:60px"></div>
+        <div class="hmm-down">↓</div>
+        <div style="width:60px"></div>
+        <div class="hmm-down">↓</div>
+      </div>
+      <div class="hmm-row">
+        <div class="hmm-state hmm-observed">boy</div>
+        <div class="hmm-arrow" style="color:transparent">→</div>
+        <div class="hmm-state hmm-observed">plays</div>
+        <div class="hmm-arrow" style="color:transparent">→</div>
+        <div class="hmm-state hmm-observed">cricket</div>
+      </div>
+      <div class="hmm-row">
+        <span class="hmm-label o">OBSERVED</span>
+      </div>
+    </div>
+
+    <h3>Two Key Probabilities in HMM</h3>
+    <table class="styled-table">
+      <tr><th>Probability</th><th>What it means</th><th>Example</th></tr>
+      <tr>
+        <td><strong>Transition P</strong></td>
+        <td>P(next tag | current tag)</td>
+        <td>P(Verb | Noun) = 0.7 (noun often followed by verb)</td>
+      </tr>
+      <tr>
+        <td><strong>Emission P</strong></td>
+        <td>P(word | tag)</td>
+        <td>P("runs" | Verb) = 0.05</td>
+      </tr>
+    </table>
+
+    <div class="example-box">
+      <div class="ex-label">The Ambiguous Sentence</div>
+      <p><code>"Time flies like an arrow"</code></p>
+      <p>This sentence has multiple valid interpretations! "flies" could be a verb or a noun. "like" could be a verb or preposition.</p>
+      <p>HMM calculates the probability of <em>every possible</em> tag sequence and picks the highest — the Viterbi algorithm does this efficiently.</p>
+    </div>
+
+    <h3>Why HMM is Better than Plain Markov</h3>
+    <div class="compare-row">
+      <div class="compare-side bad">
+        <div class="cs-label">Markov Model</div>
+        Works with visible states only. POS tags must be directly observable.
+      </div>
+      <div class="compare-side good">
+        <div class="cs-label">HMM</div>
+        Can infer hidden tags from observed words. Handles ambiguity probabilistically.
+      </div>
+    </div>
+
+    <div class="worked-wrap">
+      <div class="worked-toggle" onclick="toggleWorked(this)">
+        📝 HMM in Action — Step by Step <span>▾ Show</span>
+      </div>
+      <div class="worked-body">
+        <div class="worked-step">
+          <span class="ws-label">Task</span>
+          <div>Tag sentence: "Dog barks"</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Candidates</span>
+          <div>Possible tag sequences: (NN, VBZ) or (NN, NN) or (VB, VBZ)...</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Calculate</span>
+          <div>P(NN, VBZ | "Dog barks") = P(NN)×P("dog"|NN)×P(VBZ|NN)×P("barks"|VBZ)</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Compare</span>
+          <div>Calculate probability for all sequences. Pick the highest.</div>
+        </div>
+        <div class="worked-step">
+          <span class="ws-label">Answer</span>
+          <div>Typically (NN, VBZ) wins → Dog/NN + barks/VBZ ✓</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="limitation-box">
+      <div class="lim-label">⚠️ HMM Limitation</div>
+      Assumes independence between observations. Cannot use future words (right context) for tagging decisions. Limited context window. Leading to Transformation-based learning.
+    </div>
+
+    <div class="quiz-section">
+      <h4>Quick Check ✓</h4>
+      <div class="quiz-q">
+        <p>In HMM for POS tagging, what are the "hidden" states and what are the "observed" outputs?</p>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="answer(this, false)">Hidden = words, Observed = sentences</button>
+          <button class="quiz-opt" onclick="answer(this, true)">Hidden = POS tags, Observed = words</button>
+          <button class="quiz-opt" onclick="answer(this, false)">Hidden = probabilities, Observed = tags</button>
+        </div>
+        <div class="quiz-feedback ok">✓ Exactly! We observe the words but the POS tags are hidden — HMM infers them from the words using probability.</div>
+        <div class="quiz-feedback no">We can directly SEE the words (observed). We cannot directly see the POS tags — they are hidden. HMM discovers the hidden tags.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 8 ══════════════ -->
+<div class="topic-section" id="t8">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">08</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Transformation-Based Learning (TBL)</div>
+      <div class="topic-subtitle">Start rough, then fix mistakes with rules</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <div class="why-box">
+      <div class="why-label">Problem it solves</div>
+      HMM makes tagging errors. What if we could automatically learn rules to fix those errors from training data? That's TBL!
+    </div>
+
+    <div class="definition-box">
+      <div class="def-label">Transformation-Based Learning (TBL / Brill Tagger)</div>
+      <p>A hybrid approach: start with an initial (rough) tagging, then <strong>automatically learn correction rules</strong> from training data to fix mistakes.</p>
+    </div>
+
+    <h3>How TBL Works — 3 Steps</h3>
+    <ol class="step-list">
+      <li><strong>Initial tagging</strong> — Assign the most frequent tag to each word (rough first pass)</li>
+      <li><strong>Compare with correct</strong> — Check against gold-standard (correct) tagged data</li>
+      <li><strong>Learn correction rules</strong> — Find transformations that fix the most errors, repeat</li>
+    </ol>
+
+    <div class="example-box">
+      <div class="ex-label">TBL Rule Example</div>
+      <p>Initial tag: <code>"bank"</code> → NN (noun) ← often wrong</p>
+      <p>Correction rule learned from data: <em>"If the word is tagged NN AND the previous word is 'to', then change tag to VB (verb)"</em></p>
+      <p>Applied: <code>"to bank"</code> → "bank" becomes VB ✓ (to bank = to save money)</p>
+    </div>
+
+    <div class="example-box">
+      <div class="ex-label">Another Rule</div>
+      <p>Rule: <em>"If word is tagged VBD (past tense) but follows a determiner like 'the' or 'a', change to NN"</em></p>
+      <p>Applied: <code>"the red"</code> → "red" changed from VBD to JJ (adjective) ✓</p>
+    </div>
+
+    <div class="compare-row">
+      <div class="compare-side good">
+        <div class="cs-label">✅ Advantage over HMM</div>
+        Rules are human-readable. Combines statistical learning with linguistic rules. More accurate than pure HMM.
+      </div>
+      <div class="compare-side bad">
+        <div class="cs-label">❌ Limitation</div>
+        Still depends on hand-crafted rule templates. Cannot use all available features simultaneously.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 9 ══════════════ -->
+<div class="topic-section" id="t9">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">09</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Maximum Entropy Models</div>
+      <div class="topic-subtitle">Using all features without assumptions</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <div class="why-box">
+      <div class="why-label">Problem with Previous Models</div>
+      HMM assumes words are independent of each other (Naive Bayes assumption). Real language uses many features simultaneously — we need a model that can use them ALL.
+    </div>
+
+    <div class="definition-box">
+      <div class="def-label">Maximum Entropy (MaxEnt) / Log-linear Model</div>
+      <p>Uses <strong>all available features</strong> simultaneously to predict the best POS tag — without assuming they are independent of each other.</p>
+    </div>
+
+    <h3>Features Used in MaxEnt</h3>
+    <div class="example-box">
+      <div class="ex-label">Features for tagging the word "play"</div>
+      <p>1. The word itself: <code>play</code></p>
+      <p>2. Previous word: <code>they</code></p>
+      <p>3. Next word: <code>cricket</code></p>
+      <p>4. Word ending: <code>-ay</code></p>
+      <p>5. Is word capitalized: <code>No</code></p>
+      <p>6. Previous POS tag: <code>PRP (pronoun)</code></p>
+      <p>→ MaxEnt combines ALL these features to assign the best tag</p>
+    </div>
+
+    <h3>The "Maximum Entropy" Principle</h3>
+    <div class="example-box">
+      <div class="ex-label">Core Idea</div>
+      <p>Among all probability distributions that satisfy our constraints (known features), choose the one with <strong>maximum entropy</strong> — the most uniform one that doesn't make unnecessary assumptions.</p>
+      <p>"Don't assume anything beyond what the data tells you."</p>
+    </div>
+
+    <div class="compare-row">
+      <div class="compare-side good">
+        <div class="cs-label">✅ Advantage</div>
+        Uses rich features. More accurate. No independence assumption. Flexible.
+      </div>
+      <div class="compare-side bad">
+        <div class="cs-label">❌ Limitation</div>
+        Computationally expensive to train. Does not model sequence dependencies well.
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-label">🎯 Exam Tip</div>
+      MaxEnt = uses multiple features + no independence assumption + computationally expensive. The key advantage over HMM: it can use <em>overlapping, dependent</em> features without a problem.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TOPIC 10 ══════════════ -->
+<div class="topic-section" id="t10">
+  <div class="topic-header" onclick="toggle(this)">
+    <div class="topic-num">10</div>
+    <div class="topic-title-wrap">
+      <div class="topic-title">Conditional Random Fields (CRF)</div>
+      <div class="topic-subtitle">The state-of-the-art sequence labeller</div>
+    </div>
+    <span class="topic-arrow">▾</span>
+  </div>
+  <div class="topic-body">
+    <div class="why-box">
+      <div class="why-label">Why CRF is needed</div>
+      MaxEnt tags each word independently. But POS tagging is a <em>sequence</em> problem — the tag of one word depends on tags of nearby words. CRF models the entire sentence together!
+    </div>
+
+    <div class="definition-box">
+      <div class="def-label">Conditional Random Field (CRF)</div>
+      <p>A model that assigns labels to a <strong>sequence</strong> of words by considering the <em>entire sequence</em> at once — not word-by-word. It combines the feature richness of MaxEnt with the sequence modeling of HMM.</p>
+    </div>
+
+    <h3>CRF in Action</h3>
+    <div class="example-box">
+      <div class="ex-label">Why Sequence Matters</div>
+      <p>Sentence: <code>"New York is beautiful"</code></p>
+      <p>If we tag word-by-word: "New" → JJ (adjective), "York" → NN (noun) → Two separate entities.</p>
+      <p>CRF looks at the whole sequence: "New York" together → single Named Entity (NNP NNP = proper noun) ✓</p>
+    </div>
+
+    <h3>CRF vs Other Models</h3>
+    <table class="styled-table">
+      <tr><th>Model</th><th>Features</th><th>Sequence?</th><th>Independent Assumption?</th></tr>
+      <tr><td>Rule-Based</td><td>Word rules</td><td>No</td><td>—</td></tr>
+      <tr><td>HMM</td><td>Limited</td><td>Yes</td><td>Yes (strong)</td></tr>
+      <tr><td>MaxEnt</td><td>Rich</td><td>No</td><td>No</td></tr>
+      <tr><td><strong>CRF</strong></td><td><strong>Rich</strong></td><td><strong>Yes</strong></td><td><strong>No</strong></td></tr>
+    </table>
+
+    <div class="compare-row">
+      <div class="compare-side good">
+        <div class="cs-label">✅ CRF Advantages</div>
+        Context-aware. Rich features. Whole-sequence modeling. Best accuracy for NER, POS, chunking.
+      </div>
+      <div class="compare-side bad">
+        <div class="cs-label">❌ Limitation</div>
+        Complex to implement. Requires more computation. Slower to train.
+      </div>
+    </div>
+
+    <h3>The Complete Evolution — Summary</h3>
+    <div class="evolution-chain">
+      <div class="evo-step">
+        <div class="evo-name">1. Rule-Based</div>
+        Hand-written grammar rules. Fast to write, fails at exceptions.
+        <div class="evo-limit">❌ Too many rules, can't handle ambiguity</div>
+      </div>
+      <div class="evo-arrow">↓ solved by...</div>
+      <div class="evo-step">
+        <div class="evo-name">2. Markov Model</div>
+        Uses probability. Next word/tag depends on current.
+        <div class="evo-limit">❌ Can't model hidden states (POS tags)</div>
+      </div>
+      <div class="evo-arrow">↓ solved by...</div>
+      <div class="evo-step">
+        <div class="evo-name">3. Hidden Markov Model (HMM)</div>
+        Hidden states (tags) + observed (words). Viterbi decoding.
+        <div class="evo-limit">❌ Independence assumption, limited features</div>
+      </div>
+      <div class="evo-arrow">↓ solved by...</div>
+      <div class="evo-step">
+        <div class="evo-name">4. Transformation-Based (TBL)</div>
+        Start rough, learn correction rules. More accurate than HMM.
+        <div class="evo-limit">❌ Still uses rule templates, no full feature use</div>
+      </div>
+      <div class="evo-arrow">↓ solved by...</div>
+      <div class="evo-step">
+        <div class="evo-name">5. Maximum Entropy (MaxEnt)</div>
+        Uses ALL features simultaneously, no independence assumption.
+        <div class="evo-limit">❌ Does not model sequence dependencies</div>
+      </div>
+      <div class="evo-arrow">↓ solved by...</div>
+      <div class="evo-step" style="border-color: var(--teal); border-width: 2.5px;">
+        <div class="evo-name">6. Conditional Random Fields (CRF) ⭐</div>
+        Rich features + whole sequence modeling + no false independence.
+        <div style="margin-top:6px;font-size:13px;color:var(--teal);font-weight:600;">✅ State-of-the-art for sequence labeling</div>
+      </div>
+    </div>
+
+    <div class="quiz-section">
+      <h4>Final Unit 2 Quiz</h4>
+      <div class="quiz-q">
+        <p>Which model considers the ENTIRE sentence sequence when assigning POS tags?</p>
+        <div class="quiz-options">
+          <button class="quiz-opt" onclick="answer(this, false)">Rule-Based Tagger</button>
+          <button class="quiz-opt" onclick="answer(this, false)">HMM</button>
+          <button class="quiz-opt" onclick="answer(this, false)">Maximum Entropy</button>
+          <button class="quiz-opt" onclick="answer(this, true)">CRF (Conditional Random Fields)</button>
+        </div>
+        <div class="quiz-feedback ok">✓ Correct! CRF is the only model that considers the entire sequence and uses rich features without independence assumptions — making it state-of-the-art.</div>
+        <div class="quiz-feedback no">HMM considers sequence but with limited features + independence assumption. MaxEnt uses rich features but NOT the sequence. Only CRF does BOTH.</div>
+      </div>
+    </div>
+
+    <h3>Unit 2 — Complete Summary</h3>
+    <table class="styled-table">
+      <tr><th>Concept</th><th>One-Line Meaning</th></tr>
+      <tr><td>Lexical Syntax</td><td>Study of word structure (prefix, root, suffix)</td></tr>
+      <tr><td>Morphology</td><td>How word forms change (play→played)</td></tr>
+      <tr><td>FST</td><td>Rule machine: input word → output word</td></tr>
+      <tr><td>POS Tagging</td><td>Label each word's grammatical role</td></tr>
+      <tr><td>Rule-Based</td><td>If-else grammar rules → simple but fragile</td></tr>
+      <tr><td>Markov Model</td><td>Next state depends on current state (probability)</td></tr>
+      <tr><td>HMM</td><td>Tags = hidden; words = observed; find most likely tags</td></tr>
+      <tr><td>TBL</td><td>Start rough, automatically learn correction rules</td></tr>
+      <tr><td>MaxEnt</td><td>Use all features, no independence assumption</td></tr>
+      <tr><td>CRF</td><td>Rich features + sequence modeling = best accuracy</td></tr>
+    </table>
+
+    <div class="memory-box">
+      <div class="mem-title">Remember the Evolution Path</div>
+      <div class="mem-content" style="font-size:14px">
+        Words → Structure → Transform → Label → Rules →<br>
+        Probability → Hidden → Fix → Features → Sequence
+      </div>
+      <p style="margin-top:8px;font-size:12px;color:rgba(255,255,255,0.55)">Each step solves the limitation of the previous one</p>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer class="unit-footer">
+  <h3>Unit 2 Complete! 🎉</h3>
+  <p>You've mastered the full journey from Lexical Syntax to CRF — the state-of-the-art NLP sequence labeller.</p>
+  <a href="unit1_nlp.html" class="back-btn">← Review Unit 1: Intro to NLP</a>
+</footer>
+
+<script>
+  function toggle(header) {
+    const body = header.nextElementSibling;
+    const isOpen = header.classList.contains('open');
+    document.querySelectorAll('.topic-header.open').forEach(h => {
+      h.classList.remove('open');
+      h.nextElementSibling.style.display = 'none';
+    });
+    if (!isOpen) {
+      header.classList.add('open');
+      body.style.display = 'block';
+      setTimeout(() => header.scrollIntoView({behavior:'smooth', block:'start'}), 50);
+    }
+  }
+
+  function toggleWorked(toggle) {
+    const body = toggle.nextElementSibling;
+    const span = toggle.querySelector('span');
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    span.textContent = isOpen ? '▾ Show' : '▴ Hide';
+  }
+
+  function answer(btn, correct) {
+    const opts = btn.closest('.quiz-options');
+    if (opts.dataset.answered) return;
+    opts.dataset.answered = '1';
+    const feedbacks = btn.closest('.quiz-q').querySelectorAll('.quiz-feedback');
+    btn.classList.add(correct ? 'correct' : 'wrong');
+    feedbacks[correct ? 1 : 0].classList.add('show');
+    feedbacks[correct ? 1 : 0].style.display = 'block';
+  }
+
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.body.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    document.getElementById('progress-bar').style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateProgress, {passive: true});
+
+  const sections = document.querySelectorAll('.topic-section');
+  const navLinks = document.querySelectorAll('.topic-nav a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 120) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }, {passive: true});
+</script>
+</body>
+</html>
