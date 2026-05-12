@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NLP Unit IV — Introduction to Text Mining | K.P. Singh</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0d1b3e;
+    --navy2: #162347;
+    --navy3: #1e2e5a;
+    --gold: #c9993a;
+    --gold2: #e8b84b;
+    --gold-light: #f5d68a;
+    --border: #243060;
+    --text: #f0eee8;
+    --muted: #8a90a8;
+    --surface: #131e40;
+    --surface2: #192847;
+    --accent-green: #4ecb7a;
+    --accent-red: #e85c5c;
+    --accent-blue: #5b9cf6;
+    --accent-purple: #a78bfa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--navy);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── TOP NAV ── */
+  .topnav {
+    background: rgba(13,27,62,0.97);
+    border-bottom: 1px solid rgba(201,153,58,0.25);
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 58px;
+    position: sticky; top: 0; z-index: 200;
+    backdrop-filter: blur(10px);
+  }
+  .topnav-left { display: flex; align-items: center; gap: 12px; }
+  .logo-link { display: flex; align-items: center; }
+  .logo-link img {
+    height: 38px; width: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    transition: transform 0.25s, box-shadow 0.25s;
+    box-shadow: 0 0 0 2px rgba(201,153,58,0.4);
+  }
+  .logo-link:hover img { transform: scale(1.07); box-shadow: 0 0 0 3px var(--gold); }
+  .back-link {
+    display: flex; align-items: center; gap: 7px;
+    color: var(--gold);
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    background: rgba(201,153,58,0.1);
+    border: 1px solid rgba(201,153,58,0.25);
+    padding: 6px 14px;
+    border-radius: 20px;
+    transition: all 0.2s;
+  }
+  .back-link:hover { background: rgba(201,153,58,0.2); border-color: var(--gold); }
+  .back-link svg { width: 13px; height: 13px; }
+  .topnav-right {
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-align: right;
+    display: flex; flex-direction: column; align-items: flex-end;
+  }
+  .topnav-right span:first-child { color: var(--gold-light); font-weight: 600; font-size: 0.78rem; }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(160deg, #0d1b3e 0%, #0f1f50 45%, #0d1a3a 100%);
+    padding: 52px 40px 44px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(201,153,58,0.2);
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 50% 0%, rgba(201,153,58,0.12), transparent),
+      radial-gradient(ellipse 40% 40% at 80% 80%, rgba(91,156,246,0.07), transparent);
+    pointer-events: none;
+  }
+  .hero-unit-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(201,153,58,0.1);
+    border: 1px solid rgba(201,153,58,0.35);
+    color: var(--gold2);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 16px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-size: clamp(1.8rem, 4.5vw, 3rem);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  .hero h1 .gold { color: var(--gold2); }
+  .hero p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    max-width: 540px;
+    margin: 0 auto 24px;
+  }
+  .hero-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 5px 13px;
+    border-radius: 20px;
+    font-size: 0.73rem;
+    color: var(--muted);
+  }
+
+  /* ── TAB BAR ── */
+  .tab-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 14px 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 58px; z-index: 100;
+  }
+  .tab-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--muted);
+    font-family: 'Sora', sans-serif;
+    font-size: 0.76rem;
+    font-weight: 600;
+    padding: 7px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--text); background: var(--surface2); }
+  .tab-btn.active {
+    background: var(--gold);
+    color: var(--navy);
+    border-color: var(--gold);
+    font-weight: 700;
+  }
+
+  /* ── MAIN ── */
+  .main { max-width: 900px; margin: 0 auto; padding: 36px 22px 80px; }
+  .section { display: none; animation: fadeUp 0.35s ease; }
+  .section.active { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 26px 30px;
+    margin-bottom: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold2));
+    border-radius: 16px 16px 0 0;
+  }
+  .card.blue::before { background: linear-gradient(90deg, var(--accent-blue), #a78bfa); }
+  .card.green::before { background: linear-gradient(90deg, var(--accent-green), #38bdf8); }
+  .card.red::before { background: linear-gradient(90deg, var(--accent-red), #f97316); }
+  .card.purple::before { background: linear-gradient(90deg, var(--accent-purple), #ec4899); }
+
+  .card h2 {
+    font-size: 1.25rem; font-weight: 700;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .card h3 {
+    font-size: 1rem; font-weight: 600;
+    color: var(--gold2);
+    margin: 18px 0 8px;
+  }
+  .card.blue h3 { color: var(--accent-blue); }
+  .card.green h3 { color: var(--accent-green); }
+  .card.red h3 { color: var(--accent-red); }
+  .card.purple h3 { color: var(--accent-purple); }
+  .card p { color: #cac6e0; font-size: 0.92rem; margin-bottom: 9px; }
+
+  /* ── CONCEPT BOX ── */
+  .cbox {
+    background: rgba(201,153,58,0.07);
+    border: 1px solid rgba(201,153,58,0.25);
+    border-radius: 10px;
+    padding: 13px 17px;
+    margin: 11px 0;
+    font-size: 0.89rem;
+    color: #f0e8c8;
+  }
+  .cbox.blue { background: rgba(91,156,246,0.08); border-color: rgba(91,156,246,0.25); color: #c5d9ff; }
+  .cbox.green { background: rgba(78,203,122,0.08); border-color: rgba(78,203,122,0.25); color: #c4f0d4; }
+  .cbox.red { background: rgba(232,92,92,0.08); border-color: rgba(232,92,92,0.25); color: #ffd4d4; }
+  .cbox.purple { background: rgba(167,139,250,0.08); border-color: rgba(167,139,250,0.25); color: #e0d8ff; }
+
+  /* ── CODE BOX ── */
+  .code {
+    background: #080d1e;
+    border: 1px solid #1e2848;
+    border-radius: 10px;
+    padding: 15px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: #7dd3fc;
+    margin: 11px 0;
+    line-height: 1.9;
+    overflow-x: auto;
+  }
+  .code .k { color: var(--gold2); }
+  .code .v { color: #4ade80; }
+  .code .c { color: #4b5563; font-style: italic; }
+  .code .h { color: var(--accent-red); }
+  .code .p { color: #a78bfa; }
+
+  /* ── TABLE ── */
+  table { width:100%; border-collapse:collapse; font-size:0.87rem; margin:12px 0; }
+  th {
+    background: var(--surface2); color: var(--gold2);
+    font-weight:600; text-align:left;
+    padding:9px 13px; border-bottom:1px solid var(--border);
+  }
+  td { padding:9px 13px; border-bottom:1px solid rgba(36,48,96,0.5); color:#cac6e0; vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background: rgba(201,153,58,0.04); }
+
+  /* ── EXAMPLE SENT ── */
+  .eg {
+    font-family:'Lora',serif; font-style:italic;
+    font-size:1rem; color: var(--gold-light);
+    background: rgba(201,153,58,0.07);
+    border-left: 3px solid var(--gold);
+    padding: 9px 15px; border-radius: 0 8px 8px 0;
+    margin: 9px 0;
+  }
+
+  /* ── POS SENTENCE ── */
+  .pos-sent { font-size:1.05rem; font-weight:600; line-height:2.4; margin:12px 0; }
+  .pos-tag {
+    display:inline-flex; flex-direction:column; align-items:center;
+    margin: 0 4px; vertical-align:middle;
+  }
+  .pos-word {
+    font-size:1rem; font-weight:700; color:var(--text);
+    padding: 2px 6px;
+  }
+  .pos-label {
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.6rem; font-weight:700;
+    padding:2px 7px; border-radius:4px;
+    letter-spacing:0.5px;
+  }
+  .pos-det    { background:rgba(201,153,58,0.2); color:var(--gold2); }
+  .pos-adj    { background:rgba(167,139,250,0.2); color:#c4b5fd; }
+  .pos-nn     { background:rgba(78,203,122,0.2); color:#86efac; }
+  .pos-vb     { background:rgba(232,92,92,0.2); color:#fca5a5; }
+  .pos-prep   { background:rgba(91,156,246,0.2); color:#93c5fd; }
+
+  /* ── HMM DIAGRAM ── */
+  .hmm-wrap {
+    background: #080d1e;
+    border: 1px solid #1e2848;
+    border-radius: 12px;
+    padding: 18px;
+    margin: 14px 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+
+  /* ── ARCH DIAGRAM ── */
+  .arch-step {
+    display:flex; align-items:center; gap:12px; margin:8px 0;
+  }
+  .arch-num {
+    min-width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: var(--navy); font-weight:800; font-size:0.85rem;
+    border-radius:8px; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .arch-box {
+    flex:1; background: var(--surface2); border:1px solid var(--border);
+    border-radius:8px; padding:10px 15px;
+  }
+  .arch-box strong { color:var(--gold-light); font-size:0.88rem; }
+  .arch-box p { font-size:0.8rem; color:var(--muted); margin:2px 0 0; }
+  .arch-arrow { color:var(--gold); font-size:1.2rem; text-align:center; margin:2px 0; padding-left:16px; }
+
+  /* ── BADGE ── */
+  .badge {
+    display:inline-block; font-size:0.65rem; font-weight:700;
+    letter-spacing:1px; text-transform:uppercase;
+    padding:2px 9px; border-radius:20px; margin-left:8px;
+  }
+  .badge-hot { background:rgba(232,92,92,0.2); color:var(--accent-red); border:1px solid rgba(232,92,92,0.35); }
+  .badge-num { background:rgba(78,203,122,0.15); color:var(--accent-green); border:1px solid rgba(78,203,122,0.3); }
+
+  /* ── NUMERICAL BOX ── */
+  .num-box {
+    background: #050b1c;
+    border: 1px solid rgba(78,203,122,0.25);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin: 14px 0;
+  }
+  .num-box .num-title {
+    font-size:0.72rem; font-weight:700; letter-spacing:1.5px;
+    text-transform:uppercase; color:var(--accent-green); margin-bottom:12px;
+  }
+  .num-step { display:flex; gap:12px; margin:8px 0; align-items:flex-start; }
+  .num-step-n {
+    min-width:22px; height:22px; border-radius:50%;
+    background:rgba(78,203,122,0.15); color:var(--accent-green);
+    font-size:0.75rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;
+  }
+  .num-step p { font-size:0.88rem; color:#cac6e0; }
+  .num-result {
+    background:rgba(78,203,122,0.1); border:1px solid rgba(78,203,122,0.3);
+    border-radius:8px; padding:10px 16px; margin-top:12px;
+    font-family:'JetBrains Mono',monospace; font-size:0.88rem; color:var(--accent-green);
+  }
+
+  /* ── ACTIVITY ── */
+  .activity {
+    background: var(--surface2);
+    border: 1px dashed rgba(201,153,58,0.3);
+    border-radius:12px; padding:18px 22px; margin:14px 0;
+  }
+  .activity-title {
+    font-size:0.7rem; font-weight:700; letter-spacing:1.5px;
+    text-transform:uppercase; color:var(--gold2); margin-bottom:8px;
+  }
+  .activity p { color:#cac6e0; font-size:0.9rem; }
+
+  /* ── DEF TERM ── */
+  .dt {
+    font-family:'JetBrains Mono',monospace; font-size:0.79rem;
+    background: rgba(201,153,58,0.12); color:var(--gold2);
+    padding:2px 8px; border-radius:5px; font-weight:600;
+  }
+
+  /* ── QUIZ ── */
+  .quiz-q {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:12px; padding:18px 22px; margin-bottom:14px;
+  }
+  .quiz-q > p { font-weight:600; font-size:0.93rem; color:var(--text); margin-bottom:12px; }
+  .quiz-options { display:flex; flex-direction:column; gap:7px; }
+  .quiz-opt {
+    background:transparent; border:1px solid var(--border);
+    border-radius:8px; padding:9px 15px; text-align:left;
+    cursor:pointer; font-family:'Sora',sans-serif;
+    font-size:0.86rem; color:var(--muted); transition:all 0.2s;
+  }
+  .quiz-opt:hover { border-color:var(--gold); color:var(--text); background:rgba(201,153,58,0.06); }
+  .quiz-opt.correct { background:rgba(78,203,122,0.12); border-color:var(--accent-green); color:var(--accent-green); }
+  .quiz-opt.wrong { background:rgba(232,92,92,0.1); border-color:var(--accent-red); color:var(--accent-red); }
+  .quiz-fb { font-size:0.8rem; margin-top:8px; padding:8px 12px; border-radius:7px; display:none; }
+  .quiz-fb.show { display:block; }
+  .quiz-fb.ok { background:rgba(78,203,122,0.1); color:var(--accent-green); }
+  .quiz-fb.no { background:rgba(232,92,92,0.08); color:#ff9999; }
+  .prog-wrap { background:var(--surface2); border-radius:8px; height:5px; overflow:hidden; margin-bottom:5px; }
+  .prog-fill { height:100%; border-radius:8px; background:linear-gradient(90deg,var(--gold),var(--accent-green)); transition:width 0.5s; }
+  .prog-label { font-size:0.73rem; color:var(--muted); margin-bottom:18px; }
+
+  /* ── SCORE ── */
+  .score-card {
+    background: linear-gradient(135deg, rgba(201,153,58,0.12), rgba(78,203,122,0.08));
+    border: 1px solid rgba(201,153,58,0.3);
+    border-radius: 14px; padding: 24px 28px; margin-top:8px; display:none;
+  }
+  .score-card h2 { font-size:1.2rem; margin-bottom:8px; }
+  .score-card p { color:#cac6e0; }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 28px 20px;
+    border-top: 1px solid rgba(201,153,58,0.15);
+    color: var(--muted);
+    font-size: 0.78rem;
+    background: var(--navy);
+  }
+  .footer a { color: var(--gold); text-decoration: none; }
+  .footer a:hover { color: var(--gold2); }
+
+  /* ── BACK TOP ── */
+  .back-top {
+    position:fixed; bottom:24px; right:20px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: var(--navy); border:none; border-radius:50%;
+    width:42px; height:42px; font-size:1.1rem; font-weight:700;
+    cursor:pointer; box-shadow: 0 4px 18px rgba(201,153,58,0.35);
+    transition:transform 0.2s; display:flex; align-items:center; justify-content:center;
+  }
+  .back-top:hover { transform:translateY(-3px); }
+
+  /* ── ICON ── */
+  .icon { font-size:1.2rem; }
+
+  @media(max-width:600px){
+    .hero { padding:36px 18px 30px; }
+    .main { padding:20px 12px 60px; }
+    .card { padding:18px 16px; }
+    .tab-bar { padding:10px 12px; }
+    .topnav { padding:0 14px; }
+    .topnav-right { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="topnav-left">
+    <a href="https://kpsingh.in" class="logo-link" target="_blank" title="Visit KP Singh">
+      <img src="KP_Singh.png" alt="K.P. Singh Logo">
+    </a>
+    <a href="https://kpsingh.in/nlp" class="back-link">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 13L5 8l5-5"/>
+      </svg>
+      Back to NLP
+    </a>
+  </div>
+  <div class="topnav-right">
+    <span>K.P. Singh — NLP Notes</span>
+    <span>B.Sc. Data Science · 4th Semester</span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-unit-tag">⚡ Unit IV · Text Mining</div>
+  <h1>Introduction to<br><span class="gold">Text Mining</span></h1>
+  <p>From raw text to real insights — beginner-friendly notes for SRHU exam preparation.</p>
+  <div class="hero-chips">
+    <span class="chip">📄 Text Mining Basics</span>
+    <span class="chip">🏗️ Architecture</span>
+    <span class="chip">🏷️ POS Tagging</span>
+    <span class="chip">🔗 Hidden Markov Models</span>
+    <span class="chip">🗂️ Indexing</span>
+    <span class="chip">📊 Visualization</span>
+    <span class="chip">🔍 WSD</span>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('intro',this)">🚀 Start Here</button>
+  <button class="tab-btn" onclick="showTab('arch',this)">🏗️ Architecture</button>
+  <button class="tab-btn" onclick="showTab('preprocess',this)">⚙️ Preprocessing</button>
+  <button class="tab-btn" onclick="showTab('index',this)">🗂️ Indexing</button>
+  <button class="tab-btn" onclick="showTab('pos',this)">🏷️ POS Tagging</button>
+  <button class="tab-btn" onclick="showTab('hmm',this)">🔗 HMM</button>
+  <button class="tab-btn" onclick="showTab('visual',this)">📊 Visualization</button>
+  <button class="tab-btn" onclick="showTab('wsd',this)">🔍 WSD</button>
+  <button class="tab-btn" onclick="showTab('quiz',this)">✏️ Quiz</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- ══════════════════════════════════════════
+     SECTION 1 — INTRO
+══════════════════════════════════════════ -->
+<div id="intro" class="section active">
+
+  <div class="card">
+    <h2><span class="icon">🚀</span> What is Text Mining?</h2>
+    <p><span class="dt">Text Mining</span> (also called Text Analytics) is the process of automatically extracting useful information, patterns, and knowledge from large amounts of <strong>unstructured text data</strong>.</p>
+    <div class="cbox">
+      <strong>Simple analogy:</strong> Imagine you have 10,000 customer reviews for a product. No human can read all of them. Text mining can automatically tell you: "70% reviews mention the battery life as a problem" — without anyone reading every review.
+    </div>
+
+    <h3>Structured vs. Unstructured Data</h3>
+    <table>
+      <tr><th></th><th>Structured Data</th><th>Unstructured Text Data</th></tr>
+      <tr><td>Form</td><td>Tables, rows, columns</td><td>Paragraphs, tweets, emails</td></tr>
+      <tr><td>Example</td><td>Excel sales sheet</td><td>News articles, WhatsApp chats</td></tr>
+      <tr><td>Easy for computers?</td><td>Yes ✓</td><td>Very hard ✗</td></tr>
+      <tr><td>Volume in real world</td><td>~20%</td><td>~80%</td></tr>
+    </table>
+    <div class="cbox">
+      <strong>Key insight:</strong> About 80% of all data in the world is unstructured text. Text Mining helps us unlock the value hidden in that 80%.
+    </div>
+
+    <h3>Origin of Text Mining</h3>
+    <p>Text mining grew out of the field of <strong>Information Retrieval</strong> (how search engines work) in the 1990s, combined with ideas from Machine Learning and Linguistics. As the internet exploded with data, the need to automatically understand text became critical.</p>
+
+    <h3>Objectives of Text Mining</h3>
+    <div class="cbox blue">
+      ① Extract useful facts and patterns from raw text<br>
+      ② Classify documents into categories automatically<br>
+      ③ Find relationships between entities (people, places, events)<br>
+      ④ Summarize large volumes of text<br>
+      ⑤ Enable intelligent search and question answering
+    </div>
+  </div>
+
+  <div class="card green">
+    <h2><span class="icon">🌍</span> Applications of Text Mining <span class="badge badge-hot">Very Important</span></h2>
+
+    <h3>1. Social Media Analysis</h3>
+    <p>Mining tweets, Facebook posts, and Instagram captions to understand public opinion, trends, and emotions.</p>
+    <div class="eg">"Analysing 1 million tweets to find that 65% of people feel positive about a new government policy."</div>
+
+    <h3>2. Spam Email Filtering</h3>
+    <p>Gmail and Outlook use text mining to automatically detect spam. Words like "free money", "click here", "winner" in suspicious patterns get flagged.</p>
+
+    <h3>3. Product Review Analysis</h3>
+    <p>Amazon, Flipkart, and Zomato automatically process millions of reviews to generate star ratings and identify specific product issues.</p>
+
+    <h3>4. Healthcare & Medical Records</h3>
+    <p>Hospitals mine doctor's notes and medical reports to detect disease patterns, drug side effects, and predict patient risks.</p>
+
+    <h3>5. Chatbots & Virtual Assistants</h3>
+    <p>Siri, Alexa, and customer service bots use text mining to understand what a user is asking and find the right answer.</p>
+
+    <h3>6. News & Media Monitoring</h3>
+    <p>PR companies automatically monitor thousands of news articles to track how their brand is being discussed.</p>
+
+    <h3>Applications Summary Table</h3>
+    <table>
+      <tr><th>Domain</th><th>Text Mining Application</th><th>Output</th></tr>
+      <tr><td>E-commerce</td><td>Review sentiment analysis</td><td>"Product rated: ⭐⭐⭐⭐"</td></tr>
+      <tr><td>Email</td><td>Spam classification</td><td>Inbox / Spam folder</td></tr>
+      <tr><td>Healthcare</td><td>Medical record mining</td><td>Disease risk scores</td></tr>
+      <tr><td>Finance</td><td>News-based stock prediction</td><td>Buy / Sell signal</td></tr>
+      <tr><td>Law</td><td>Legal document analysis</td><td>Case summaries</td></tr>
+      <tr><td>Education</td><td>Essay grading automation</td><td>Score + feedback</td></tr>
+    </table>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 2 — ARCHITECTURE
+══════════════════════════════════════════ -->
+<div id="arch" class="section">
+
+  <div class="card">
+    <h2><span class="icon">🏗️</span> Architecture of a Text Mining System <span class="badge badge-hot">Very Important</span></h2>
+    <p>A text mining system works as a pipeline — raw text goes in one end, and structured knowledge comes out the other. Here are the key stages:</p>
+
+    <h3>The Text Mining Pipeline</h3>
+
+    <div class="arch-step">
+      <div class="arch-num">1</div>
+      <div class="arch-box">
+        <strong>📥 Text Collection (Corpus Building)</strong>
+        <p>Gather raw text from websites, databases, PDFs, emails, social media. This collection is called a <em>corpus</em>.</p>
+      </div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-step">
+      <div class="arch-num">2</div>
+      <div class="arch-box">
+        <strong>🧹 Text Preprocessing</strong>
+        <p>Clean and prepare text: tokenization, removing stopwords, stemming, lowercasing.</p>
+      </div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-step">
+      <div class="arch-num">3</div>
+      <div class="arch-box">
+        <strong>🔢 Feature Extraction</strong>
+        <p>Convert text into numbers (vectors). Common method: TF-IDF (Term Frequency-Inverse Document Frequency).</p>
+      </div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-step">
+      <div class="arch-num">4</div>
+      <div class="arch-box">
+        <strong>🗂️ Indexing</strong>
+        <p>Build an index (like a book's index) so text can be searched and retrieved quickly.</p>
+      </div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-step">
+      <div class="arch-num">5</div>
+      <div class="arch-box">
+        <strong>🤖 Text Analysis / Mining</strong>
+        <p>Apply NLP + ML algorithms: POS tagging, NER, classification, clustering, sentiment analysis.</p>
+      </div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-step">
+      <div class="arch-num">6</div>
+      <div class="arch-box">
+        <strong>📊 Knowledge Representation / Visualization</strong>
+        <p>Present results as graphs, word clouds, dashboards, reports — human-readable output.</p>
+      </div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-step">
+      <div class="arch-num">7</div>
+      <div class="arch-box">
+        <strong>✅ Application / Decision Making</strong>
+        <p>The extracted knowledge is used to make business decisions, power apps, or answer queries.</p>
+      </div>
+    </div>
+
+    <div class="cbox" style="margin-top:18px;">
+      <strong>Exam tip:</strong> You may be asked to draw this as a diagram. Practice drawing boxes with arrows from step 1 → 7 and label each box with its name + one-line description.
+    </div>
+  </div>
+
+  <div class="card blue">
+    <h2><span class="icon">🧩</span> Understanding Text — Key Concepts</h2>
+
+    <h3>What is a Corpus?</h3>
+    <p>A <span class="dt">corpus</span> is a large collection of text documents used for analysis. Think of it as the raw material for text mining.</p>
+    <div class="cbox blue">Example corpus: All articles published by The Times of India in 2024 → forms a corpus for news analysis.</div>
+
+    <h3>Words and Sentences in NLP</h3>
+    <p>Before any analysis, we must define how text is broken into units:</p>
+    <table>
+      <tr><th>Unit</th><th>Description</th><th>Example</th></tr>
+      <tr><td><strong>Character</strong></td><td>Single letter or symbol</td><td>'h', 'e', 'l'</td></tr>
+      <tr><td><strong>Token / Word</strong></td><td>Smallest meaningful unit</td><td>"hello", "the", "NLP"</td></tr>
+      <tr><td><strong>Sentence</strong></td><td>Group of tokens ending with punctuation</td><td>"The dog ran."</td></tr>
+      <tr><td><strong>Document</strong></td><td>Collection of sentences</td><td>A news article, email</td></tr>
+      <tr><td><strong>Corpus</strong></td><td>Collection of documents</td><td>All emails in a company</td></tr>
+    </table>
+
+    <h3>Challenges in Understanding Text</h3>
+    <div class="cbox blue">
+      • <strong>Ambiguity:</strong> "I saw her duck" — dodge or animal?<br>
+      • <strong>Slang &amp; abbreviations:</strong> "OMG", "lol", "gonna"<br>
+      • <strong>Spelling errors:</strong> "recieve", "teh"<br>
+      • <strong>Multiple languages:</strong> Hinglish ("kya haal hai bro?")<br>
+      • <strong>Context-dependency:</strong> Sarcasm, irony, cultural references
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 3 — PREPROCESSING
+══════════════════════════════════════════ -->
+<div id="preprocess" class="section">
+
+  <div class="card">
+    <h2><span class="icon">⚙️</span> Text Preprocessing Steps</h2>
+    <p>Raw text is messy. Before mining, we must clean and standardize it. These steps are called <strong>preprocessing</strong>.</p>
+
+    <h3>Step 1 — Tokenization</h3>
+    <p><span class="dt">Tokenization</span> = Splitting text into individual units (tokens/words/sentences).</p>
+    <div class="code">
+Input:  "The quick brown fox jumps."<br>
+Output: [<span class="v">"The"</span>, <span class="v">"quick"</span>, <span class="v">"brown"</span>, <span class="v">"fox"</span>, <span class="v">"jumps"</span>]<br><br>
+<span class="c">Sentence tokenization:</span><br>
+Input:  "I love NLP. It is useful."<br>
+Output: [<span class="v">"I love NLP."</span>, <span class="v">"It is useful."</span>]
+    </div>
+
+    <h3>Step 2 — Stopword Removal</h3>
+    <p><span class="dt">Stopwords</span> are common words that carry little meaning: "the", "is", "a", "an", "in", "of". Removing them reduces noise and speeds up processing.</p>
+    <div class="code">
+Before: [<span class="v">"The"</span>, <span class="v">"quick"</span>, <span class="v">"brown"</span>, <span class="v">"fox"</span>]<br>
+After:  [<span class="v">"quick"</span>, <span class="v">"brown"</span>, <span class="v">"fox"</span>]  <span class="c">← "The" removed</span>
+    </div>
+
+    <h3>Step 3 — Lowercasing</h3>
+    <p>Convert all text to lowercase so "Apple" and "apple" are treated as the same word.</p>
+    <div class="code">
+"Hello World NLP" → <span class="v">"hello world nlp"</span>
+    </div>
+
+    <h3>Step 4 — Stemming</h3>
+    <p><span class="dt">Stemming</span> cuts words down to their root form (may not be a real word).</p>
+    <div class="code">
+"running"   → <span class="v">"run"</span><br>
+"connected" → <span class="v">"connect"</span><br>
+"studies"   → <span class="v">"studi"</span>   <span class="c">← crude cut, not a real word</span>
+    </div>
+
+    <h3>Step 5 — Lemmatization</h3>
+    <p><span class="dt">Lemmatization</span> is smarter — it reduces words to their dictionary base form (always a real word).</p>
+    <div class="code">
+"running"  → <span class="v">"run"</span><br>
+"better"   → <span class="v">"good"</span><br>
+"studies"  → <span class="v">"study"</span>   <span class="c">← correct real word</span>
+    </div>
+
+    <h3>Stemming vs. Lemmatization</h3>
+    <table>
+      <tr><th></th><th>Stemming</th><th>Lemmatization</th></tr>
+      <tr><td>Speed</td><td>Faster</td><td>Slower</td></tr>
+      <tr><td>Output</td><td>May not be real word</td><td>Always a real word</td></tr>
+      <tr><td>Accuracy</td><td>Lower</td><td>Higher</td></tr>
+      <tr><td>Use when</td><td>Speed matters most</td><td>Accuracy matters most</td></tr>
+    </table>
+
+    <h3>Step 6 — TF-IDF (Feature Extraction)</h3>
+    <p><span class="dt">TF-IDF</span> (Term Frequency–Inverse Document Frequency) measures how important a word is in a document relative to the whole corpus.</p>
+    <div class="cbox">
+      <strong>TF</strong> = How often a word appears in THIS document<br>
+      <strong>IDF</strong> = How rare the word is across ALL documents<br>
+      <strong>TF-IDF</strong> = TF × IDF → High score = important &amp; rare word
+    </div>
+    <div class="code">
+<span class="c">If "cricket" appears 5 times in article A, and in only 2 of 1000 documents:</span><br>
+TF = 5 / (total words in A)<br>
+IDF = log(1000 / 2) = log(500) ≈ <span class="v">2.7</span><br>
+TF-IDF = TF × 2.7  <span class="c">← high score → "cricket" is key topic of article A</span>
+    </div>
+
+    <div class="activity">
+      <div class="activity-title">✏️ Preprocessing Activity</div>
+      <p>Apply all preprocessing steps to: <strong>"The Students are quickly learning the NLP concepts!"</strong></p>
+      <p style="color:var(--muted);font-size:0.83rem;margin-top:7px;">Step 1: Tokenize → Step 2: Lowercase → Step 3: Remove stopwords → Step 4: Stem</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 4 — INDEXING
+══════════════════════════════════════════ -->
+<div id="index" class="section">
+
+  <div class="card">
+    <h2><span class="icon">🗂️</span> Document Indexing <span class="badge badge-hot">Very Important</span></h2>
+    <p><span class="dt">Indexing</span> is the process of creating a data structure (the <em>index</em>) that allows extremely fast searching over a large collection of documents.</p>
+
+    <div class="cbox">
+      <strong>Book analogy:</strong> Imagine reading an entire 500-page textbook to find every mention of "photosynthesis". OR you can go to the index at the back and instantly find pages 34, 87, 212. Search engines build exactly this kind of index — but for billions of web pages.
+    </div>
+
+    <h3>What is an Inverted Index?</h3>
+    <p>The most important type of index in text mining is the <span class="dt">inverted index</span> — it maps each word to the list of documents it appears in.</p>
+
+    <div class="code">
+<span class="c">Documents:</span><br>
+Doc 1: "<span class="v">cricket</span> match was exciting"<br>
+Doc 2: "<span class="v">cricket</span> bat is wooden"<br>
+Doc 3: "football <span class="v">match</span> in stadium"<br><br>
+<span class="c">Inverted Index built:</span><br>
+<span class="k">"cricket"</span>  → [Doc 1, Doc 2]<br>
+<span class="k">"match"</span>    → [Doc 1, Doc 3]<br>
+<span class="k">"exciting"</span> → [Doc 1]<br>
+<span class="k">"bat"</span>      → [Doc 2]<br>
+<span class="k">"football"</span> → [Doc 3]<br><br>
+<span class="c">Query: "cricket" → Instantly returns: Doc 1, Doc 2 ✓</span>
+    </div>
+
+    <h3>Steps in Building a Search Index</h3>
+    <div class="arch-step">
+      <div class="arch-num">1</div>
+      <div class="arch-box"><strong>Crawl / Collect Documents</strong><p>Web crawlers (like Google's spiders) visit and download web pages.</p></div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-step">
+      <div class="arch-num">2</div>
+      <div class="arch-box"><strong>Preprocess Text</strong><p>Tokenize, remove stopwords, stem/lemmatize each document.</p></div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-step">
+      <div class="arch-num">3</div>
+      <div class="arch-box"><strong>Build Inverted Index</strong><p>Map every word → list of document IDs where it appears.</p></div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-step">
+      <div class="arch-num">4</div>
+      <div class="arch-box"><strong>Store + Optimize Index</strong><p>Store on disk efficiently. Add ranking scores (TF-IDF, PageRank).</p></div>
+    </div>
+    <div class="arch-arrow">↓</div>
+    <div class="arch-step">
+      <div class="arch-num">5</div>
+      <div class="arch-box"><strong>Query Processing</strong><p>User types a query → look it up in the index → return ranked results in milliseconds.</p></div>
+    </div>
+
+    <h3>Why Is Indexing Important?</h3>
+    <table>
+      <tr><th>Without Indexing</th><th>With Indexing</th></tr>
+      <tr><td>Must scan every document one by one</td><td>Look up word in index instantly</td></tr>
+      <tr><td>Time: hours for billions of pages</td><td>Time: milliseconds</td></tr>
+      <tr><td>Not scalable</td><td>Scales to trillions of documents</td></tr>
+    </table>
+
+    <div class="activity">
+      <div class="activity-title">🔎 Search Engine Simulation</div>
+      <p>Given 5 sentences (your "documents"), build an inverted index on paper. Then "search" for the word "sports" — which documents match?</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 5 — POS TAGGING
+══════════════════════════════════════════ -->
+<div id="pos" class="section">
+
+  <div class="card">
+    <h2><span class="icon">🏷️</span> POS Tagging — Parts of Speech <span class="badge badge-hot">Very Important</span></h2>
+    <p><span class="dt">POS Tagging</span> (Part-of-Speech Tagging) is the process of labeling each word in a sentence with its grammatical category — noun, verb, adjective, etc.</p>
+
+    <div class="cbox">
+      <strong>Why does it matter?</strong> The word "bank" can be a noun ("the bank is closed") or a verb ("he will bank the money"). POS tagging resolves this by looking at context.
+    </div>
+
+    <h3>Common POS Tags</h3>
+    <table>
+      <tr><th>Tag</th><th>Full Name</th><th>Examples</th></tr>
+      <tr><td><span class="pos-label pos-nn">NN</span></td><td>Noun (singular)</td><td>dog, city, book, Ravi</td></tr>
+      <tr><td><span class="pos-label pos-vb">VB</span></td><td>Verb (base form)</td><td>run, eat, write, solve</td></tr>
+      <tr><td><span class="pos-label pos-adj">JJ</span></td><td>Adjective</td><td>smart, big, beautiful, quick</td></tr>
+      <tr><td><span class="pos-label pos-det">DT</span></td><td>Determiner</td><td>the, a, an, this, that</td></tr>
+      <tr><td><span class="pos-label pos-prep">IN</span></td><td>Preposition</td><td>in, on, at, by, with</td></tr>
+      <tr><td style="font-family:monospace;font-size:0.8rem;color:#c4b5fd;">RB</td><td>Adverb</td><td>quickly, very, well, soon</td></tr>
+      <tr><td style="font-family:monospace;font-size:0.8rem;color:#fca5a5;">VBD</td><td>Verb past tense</td><td>ran, ate, solved, wrote</td></tr>
+      <tr><td style="font-family:monospace;font-size:0.8rem;color:#86efac;">NNS</td><td>Noun (plural)</td><td>dogs, cities, books</td></tr>
+    </table>
+
+    <h3>Worked Example — POS Tagged Sentences</h3>
+    <p>Sentence: <em>"The smart student solved the problem."</em></p>
+
+    <div style="background:#080d1e;border:1px solid #1e2848;border-radius:12px;padding:18px 20px;margin:12px 0;">
+      <div class="pos-sent">
+        <span class="pos-tag"><span class="pos-word">The</span><span class="pos-label pos-det">DT</span></span>
+        <span class="pos-tag"><span class="pos-word">smart</span><span class="pos-label pos-adj">JJ</span></span>
+        <span class="pos-tag"><span class="pos-word">student</span><span class="pos-label pos-nn">NN</span></span>
+        <span class="pos-tag"><span class="pos-word">solved</span><span class="pos-label pos-vb">VBD</span></span>
+        <span class="pos-tag"><span class="pos-word">the</span><span class="pos-label pos-det">DT</span></span>
+        <span class="pos-tag"><span class="pos-word">problem</span><span class="pos-label pos-nn">NN</span></span>
+        <span class="pos-word" style="color:var(--muted)">.</span>
+      </div>
+    </div>
+
+    <p>Sentence: <em>"A quick fox jumped over the fence."</em></p>
+    <div style="background:#080d1e;border:1px solid #1e2848;border-radius:12px;padding:18px 20px;margin:12px 0;">
+      <div class="pos-sent">
+        <span class="pos-tag"><span class="pos-word">A</span><span class="pos-label pos-det">DT</span></span>
+        <span class="pos-tag"><span class="pos-word">quick</span><span class="pos-label pos-adj">JJ</span></span>
+        <span class="pos-tag"><span class="pos-word">fox</span><span class="pos-label pos-nn">NN</span></span>
+        <span class="pos-tag"><span class="pos-word">jumped</span><span class="pos-label pos-vb">VBD</span></span>
+        <span class="pos-tag"><span class="pos-word">over</span><span class="pos-label pos-prep">IN</span></span>
+        <span class="pos-tag"><span class="pos-word">the</span><span class="pos-label pos-det">DT</span></span>
+        <span class="pos-tag"><span class="pos-word">fence</span><span class="pos-label pos-nn">NN</span></span>
+      </div>
+    </div>
+
+    <h3>Methods of POS Tagging</h3>
+    <table>
+      <tr><th>Method</th><th>How it Works</th><th>Example Tool</th></tr>
+      <tr><td>Rule-Based</td><td>Hand-written grammar rules</td><td>Brill Tagger</td></tr>
+      <tr><td>Statistical (HMM)</td><td>Learns from tagged corpus using probabilities</td><td>NLTK HMM tagger</td></tr>
+      <tr><td>Deep Learning</td><td>Neural network learns patterns automatically</td><td>spaCy, BERT</td></tr>
+    </table>
+
+    <div class="activity">
+      <div class="activity-title">🏷️ POS Tagging Game</div>
+      <p>Tag every word in: <strong>"Riya quickly solved the difficult mathematics problem."</strong></p>
+      <p style="color:var(--muted);font-size:0.83rem;margin-top:6px;">Assign: DT / JJ / NN / VBD / RB to each word.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 6 — HMM
+══════════════════════════════════════════ -->
+<div id="hmm" class="section">
+
+  <div class="card">
+    <h2><span class="icon">🔗</span> Hidden Markov Models (HMM) <span class="badge badge-hot">Very Important</span></h2>
+    <p>An <span class="dt">HMM</span> is a statistical model used to predict sequences — where the next item in the sequence depends on the current state. It is called "hidden" because we can observe the outputs (words) but not the underlying states (POS tags) directly.</p>
+
+    <h3>Real-Life Analogy — Weather States</h3>
+    <div class="cbox">
+      Imagine you can't see outside but you can observe what a friend wears:<br>
+      • If they wear a <strong>raincoat</strong> → probably <strong>Rainy</strong><br>
+      • If they wear <strong>sunglasses</strong> → probably <strong>Sunny</strong><br><br>
+      <strong>Hidden states</strong> = actual weather (Sunny, Rainy, Cloudy)<br>
+      <strong>Observations</strong> = what the friend wears (raincoat, sunglasses, jacket)
+    </div>
+
+    <h3>HMM in NLP — POS Tagging Connection</h3>
+    <div class="cbox blue">
+      <strong>Hidden states</strong> = POS tags (Noun, Verb, Adjective…)<br>
+      <strong>Observations</strong> = actual words ("dog", "runs", "fast"…)<br><br>
+      We observe the words but we want to find the most likely sequence of POS tags.
+    </div>
+
+    <h3>3 Key Probabilities in HMM</h3>
+    <table>
+      <tr><th>Probability</th><th>Meaning</th><th>Example</th></tr>
+      <tr><td><strong>Transition P(tag₂ | tag₁)</strong></td><td>Probability of going from one tag to another</td><td>P(Verb | Noun) = 0.6</td></tr>
+      <tr><td><strong>Emission P(word | tag)</strong></td><td>Probability that a tag generates a specific word</td><td>P("dog" | Noun) = 0.3</td></tr>
+      <tr><td><strong>Initial P(tag₁)</strong></td><td>Probability of a sentence starting with a tag</td><td>P(start = Noun) = 0.5</td></tr>
+    </table>
+
+    <h3>Transition Diagram</h3>
+    <div class="hmm-wrap">
+      <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" font-family="Sora, sans-serif" font-size="13">
+        <!-- States -->
+        <circle cx="100" cy="100" r="42" fill="rgba(201,153,58,0.12)" stroke="#c9993a" stroke-width="1.5"/>
+        <text x="100" y="96" fill="#e8b84b" text-anchor="middle" font-weight="700">Noun</text>
+        <text x="100" y="113" fill="#c9993a" font-size="11" text-anchor="middle">(NN)</text>
+
+        <circle cx="300" cy="100" r="42" fill="rgba(232,92,92,0.12)" stroke="#e85c5c" stroke-width="1.5"/>
+        <text x="300" y="96" fill="#f87171" text-anchor="middle" font-weight="700">Verb</text>
+        <text x="300" y="113" fill="#e85c5c" font-size="11" text-anchor="middle">(VB)</text>
+
+        <circle cx="500" cy="100" r="42" fill="rgba(167,139,250,0.12)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="500" y="96" fill="#c4b5fd" text-anchor="middle" font-weight="700">Adjective</text>
+        <text x="500" y="113" fill="#a78bfa" font-size="11" text-anchor="middle">(JJ)</text>
+
+        <!-- Arrows NN → VB -->
+        <path d="M 142 88 Q 200 60 258 88" stroke="#c9993a" stroke-width="1.5" fill="none" marker-end="url(#arr1)"/>
+        <text x="200" y="58" fill="#c9993a" font-size="11" text-anchor="middle">0.6</text>
+
+        <!-- Arrows VB → JJ -->
+        <path d="M 342 88 Q 400 60 458 88" stroke="#e85c5c" stroke-width="1.5" fill="none" marker-end="url(#arr2)"/>
+        <text x="400" y="58" fill="#e85c5c" font-size="11" text-anchor="middle">0.4</text>
+
+        <!-- Self loop NN -->
+        <path d="M 70 62 Q 30 20 66 72" stroke="#c9993a" stroke-width="1.2" fill="none" stroke-dasharray="3,2" marker-end="url(#arr1)"/>
+        <text x="30" y="40" fill="#c9993a" font-size="10" text-anchor="middle">0.2</text>
+
+        <!-- NN → JJ skip -->
+        <path d="M 138 118 Q 300 170 462 118" stroke="#4ecb7a" stroke-width="1.2" fill="none" stroke-dasharray="4,3" marker-end="url(#arr3)"/>
+        <text x="300" y="178" fill="#4ecb7a" font-size="11" text-anchor="middle">0.2</text>
+
+        <!-- Defs -->
+        <defs>
+          <marker id="arr1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#c9993a"/>
+          </marker>
+          <marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#e85c5c"/>
+          </marker>
+          <marker id="arr3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#4ecb7a"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <h3>HMM Numerical — Exam Practice <span class="badge badge-num">Numerical</span></h3>
+
+    <div class="num-box">
+      <div class="num-title">🔢 Worked Numerical Example</div>
+      <p style="color:#cac6e0;font-size:0.88rem;margin-bottom:12px;">
+        Given:<br>
+        P(Noun → Verb) = 0.6<br>
+        P(Verb → Adjective) = 0.4<br><br>
+        <strong>Find:</strong> Probability of the sequence Noun → Verb → Adjective
+      </p>
+      <div class="num-step">
+        <div class="num-step-n">1</div>
+        <p>Write down the transition probabilities needed:<br>
+          P(Noun → Verb) = 0.6<br>
+          P(Verb → Adjective) = 0.4</p>
+      </div>
+      <div class="num-step">
+        <div class="num-step-n">2</div>
+        <p>For a sequence of transitions, multiply the probabilities:<br>
+          P(sequence) = P(N→V) × P(V→JJ)</p>
+      </div>
+      <div class="num-step">
+        <div class="num-step-n">3</div>
+        <p>Calculate:<br>
+          P = 0.6 × 0.4 = <strong>0.24</strong></p>
+      </div>
+      <div class="num-result">
+        Answer: P(Noun → Verb → Adjective) = 0.6 × 0.4 = <strong>0.24</strong>
+      </div>
+    </div>
+
+    <div class="num-box" style="border-color:rgba(201,153,58,0.25);">
+      <div class="num-title" style="color:var(--gold2);">🔢 Practice Numerical</div>
+      <p style="color:#cac6e0;font-size:0.88rem;margin-bottom:10px;">
+        Given:<br>
+        P(Noun → Verb) = 0.5<br>
+        P(Verb → Noun) = 0.3<br>
+        P(Noun → Adjective) = 0.2<br><br>
+        <strong>Find:</strong> P(Noun → Verb → Noun) and P(Noun → Adjective)
+      </p>
+      <div class="num-result" style="border-color:rgba(201,153,58,0.3);color:var(--gold2);">
+        P(N→V→N)  = 0.5 × 0.3 = 0.15<br>
+        P(N→JJ)   = 0.2
+      </div>
+    </div>
+
+    <div class="activity">
+      <div class="activity-title">⛅ HMM Chain Activity</div>
+      <p>Play weather HMM in class: Students = States (Sunny, Rainy, Cloudy). Each student "transitions" to the next student based on probability cards. Observe how sequences form — just like POS tag sequences in sentences!</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 7 — VISUALIZATION
+══════════════════════════════════════════ -->
+<div id="visual" class="section">
+
+  <div class="card">
+    <h2><span class="icon">📊</span> Information Visualization <span class="badge badge-hot">Very Important</span></h2>
+    <p><span class="dt">Information Visualization</span> is the process of representing complex data in visual formats (charts, graphs, word clouds) so humans can understand patterns and insights quickly.</p>
+
+    <div class="cbox">
+      <strong>Simple truth:</strong> The human brain processes images 60,000× faster than text. A bar chart showing that "Battery" is the most common complaint in reviews tells a manager more in 2 seconds than 10 pages of text would.
+    </div>
+
+    <h3>Common Text Visualization Techniques</h3>
+    <table>
+      <tr><th>Technique</th><th>What it Shows</th><th>Best Used For</th></tr>
+      <tr><td><strong>Word Cloud</strong></td><td>Most frequent words (larger = more frequent)</td><td>Topic overview, social media analysis</td></tr>
+      <tr><td><strong>Bar Chart</strong></td><td>Frequency / count of categories</td><td>Word frequency, sentiment counts</td></tr>
+      <tr><td><strong>Pie Chart</strong></td><td>Proportions / percentages</td><td>Sentiment breakdown (pos/neg/neutral)</td></tr>
+      <tr><td><strong>Line Graph</strong></td><td>Trends over time</td><td>How topic popularity changed monthly</td></tr>
+      <tr><td><strong>Heatmap</strong></td><td>Intensity across two dimensions</td><td>Which words co-occur most often</td></tr>
+      <tr><td><strong>Network Graph</strong></td><td>Relationships between entities</td><td>Who mentions whom in news articles</td></tr>
+    </table>
+
+    <h3>Word Frequency Bar Chart — Example</h3>
+    <div style="background:#080d1e;border:1px solid #1e2848;border-radius:12px;padding:20px;margin:12px 0;">
+      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:14px;font-family:monospace;">Word frequency in 500 product reviews:</p>
+      <div id="barchart">
+        <!-- Rendered via JS below -->
+      </div>
+    </div>
+
+    <h3>Importance of Visualization in Business Decisions</h3>
+    <div class="cbox blue">
+      <strong>Marketing:</strong> Word cloud of customer reviews instantly shows what customers care about.<br><br>
+      <strong>Finance:</strong> Sentiment trend line of news articles predicts stock movement.<br><br>
+      <strong>Healthcare:</strong> Heatmap of symptom co-occurrence helps doctors identify disease patterns.<br><br>
+      <strong>Politics:</strong> Network graph shows how political topics spread through social media.
+    </div>
+
+    <h3>Architecture Position</h3>
+    <p>Visualization is the <strong>final output layer</strong> of the text mining architecture — it converts the mined knowledge into a human-readable, decision-ready format.</p>
+
+    <div class="activity">
+      <div class="activity-title">📊 Visualization Exercise</div>
+      <p>Count word frequencies in the sentence: <strong>"Cricket is a sport. Cricket requires skill. Sport builds fitness."</strong></p>
+      <p style="color:var(--muted);font-size:0.83rem;margin-top:6px;">Then draw a simple bar chart with your results. Which word appears most? Why does visualization make this obvious instantly?</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 8 — WSD
+══════════════════════════════════════════ -->
+<div id="wsd" class="section">
+
+  <div class="card">
+    <h2><span class="icon">🔍</span> Word Sense Disambiguation (WSD)</h2>
+    <p><span class="dt">WSD</span> is the task of automatically identifying which <strong>meaning (sense)</strong> of an ambiguous word is intended in a given context.</p>
+
+    <div class="cbox">
+      <strong>Problem:</strong> The word "bank" has at least 3 meanings.<br>
+      Without context, a computer cannot know which one is meant.
+    </div>
+
+    <h3>Example — "Bank"</h3>
+    <div class="eg">"He deposited money in the bank." → 🏦 Financial institution</div>
+    <div class="eg">"She sat by the river bank." → 🌊 Sloping land beside water</div>
+    <div class="eg">"The plane had to bank sharply." → ✈️ To tilt sideways (verb)</div>
+
+    <h3>Why WSD Matters in Text Mining</h3>
+    <table>
+      <tr><th>Application</th><th>Why WSD is Needed</th></tr>
+      <tr><td>Search Engines</td><td>"Apple" query — fruit or company? Different results needed.</td></tr>
+      <tr><td>Machine Translation</td><td>Translate "bank" correctly in Hindi (बैंक vs. किनारा)</td></tr>
+      <tr><td>Chatbots</td><td>User says "I need to see a doctor" — doctor = physician, not PhD</td></tr>
+      <tr><td>Sentiment Analysis</td><td>"The movie was sick!" — sick = bad or (slang) amazing?</td></tr>
+    </table>
+
+    <h3>3 WSD Approaches</h3>
+
+    <div class="cbox">
+      <strong>① Supervised:</strong> Train a classifier on labeled examples where humans marked the correct sense. High accuracy but needs lots of labeled data.
+    </div>
+    <div class="cbox blue" style="margin-top:8px;">
+      <strong>② Dictionary-Based (Knowledge-Based):</strong> Use WordNet. Compare context words with dictionary definitions. Pick the sense whose definition overlaps most with the surrounding words. (Lesk Algorithm)
+    </div>
+    <div class="cbox green" style="margin-top:8px;">
+      <strong>③ Unsupervised:</strong> Cluster occurrences of a word by their surrounding context words. No labels needed. Can discover new senses automatically.
+    </div>
+
+    <h3>Quick Comparison</h3>
+    <table>
+      <tr><th>Approach</th><th>Input Needed</th><th>Accuracy</th><th>Best When</th></tr>
+      <tr><td>Supervised</td><td>Labeled dataset</td><td>Highest</td><td>Enough labeled examples exist</td></tr>
+      <tr><td>Dictionary-Based</td><td>WordNet / dictionary</td><td>Medium</td><td>No labeled data available</td></tr>
+      <tr><td>Unsupervised</td><td>Large unlabeled corpus</td><td>Lower</td><td>Discovering new/unknown senses</td></tr>
+    </table>
+
+    <div class="activity">
+      <div class="activity-title">🔍 WSD Activity — "Bank"</div>
+      <p>Identify which sense is used:</p>
+      <p style="margin-top:8px;">1. "He deposited money in the bank." → Sense: ?</p>
+      <p>2. "She sat near the river bank." → Sense: ?</p>
+      <p>3. "The aircraft banked to the left." → Sense: ?</p>
+    </div>
+  </div>
+
+  <div class="card green">
+    <h2><span class="icon">📋</span> Quick Reference — All Topics</h2>
+
+    <h3>One-Line Exam Definitions</h3>
+    <div class="code">
+<span class="k">Text Mining</span>   = Extracting patterns/knowledge from unstructured text<br>
+<span class="k">Corpus</span>        = Large collection of text documents<br>
+<span class="k">Tokenization</span>  = Splitting text into words/sentences<br>
+<span class="k">Stopwords</span>     = Common words with little meaning (the, is, a)<br>
+<span class="k">Stemming</span>      = Reducing words to root form (running → run)<span class="c"> crude</span><br>
+<span class="k">Lemmatization</span> = Reducing to dictionary base form <span class="c">accurate</span><br>
+<span class="k">TF-IDF</span>        = Measure of how important a word is in a document<br>
+<span class="k">Indexing</span>      = Data structure for fast document retrieval<br>
+<span class="k">POS Tagging</span>   = Labeling each word with its grammar category<br>
+<span class="k">HMM</span>           = Statistical model for predicting sequences<br>
+<span class="k">Visualization</span> = Representing data in graphs/charts for insight<br>
+<span class="k">WSD</span>           = Finding correct word sense from context
+    </div>
+
+    <h3>HMM Numericals — Formula Card</h3>
+    <div class="num-result" style="border-color:rgba(201,153,58,0.3);color:var(--gold2);">
+      P(state sequence) = P(s₁→s₂) × P(s₂→s₃) × ... × P(sₙ₋₁→sₙ)<br><br>
+      Example: P(N→V→JJ) = 0.6 × 0.4 = <strong>0.24</strong>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 9 — QUIZ
+══════════════════════════════════════════ -->
+<div id="quiz" class="section">
+
+  <div class="card">
+    <h2><span class="icon">✏️</span> Practice Quiz — Unit IV</h2>
+    <p>Test yourself before the exam. Click an option to check your answer instantly.</p>
+    <div class="prog-wrap"><div class="prog-fill" id="pbar" style="width:0%"></div></div>
+    <div class="prog-label" id="plabel">0 / 9 answered</div>
+  </div>
+
+  <div class="quiz-q" id="qq1">
+    <p>1. Text Mining is primarily used to extract knowledge from:</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="ans(this,'qq1',false)">a) Structured database tables</button>
+      <button class="quiz-opt" onclick="ans(this,'qq1',true)">b) Unstructured text data</button>
+      <button class="quiz-opt" onclick="ans(this,'qq1',false)">c) Audio recordings</button>
+      <button class="quiz-opt" onclick="ans(this,'qq1',false)">d) Image files</button>
+    </div>
+    <div class="quiz-fb" id="fb-qq1"></div>
+  </div>
+
+  <div class="quiz-q" id="qq2">
+    <p>2. Which data structure allows fast word-to-document lookup in a search engine?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="ans(this,'qq2',false)">a) Parse Tree</button>
+      <button class="quiz-opt" onclick="ans(this,'qq2',false)">b) Decision Tree</button>
+      <button class="quiz-opt" onclick="ans(this,'qq2',true)">c) Inverted Index</button>
+      <button class="quiz-opt" onclick="ans(this,'qq2',false)">d) Hash Table</button>
+    </div>
+    <div class="quiz-fb" id="fb-qq2"></div>
+  </div>
+
+  <div class="quiz-q" id="qq3">
+    <p>3. POS stands for:</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="ans(this,'qq3',false)">a) Probability of Sequence</button>
+      <button class="quiz-opt" onclick="ans(this,'qq3',false)">b) Point of Sale</button>
+      <button class="quiz-opt" onclick="ans(this,'qq3',true)">c) Part of Speech</button>
+      <button class="quiz-opt" onclick="ans(this,'qq3',false)">d) Pattern of Syntax</button>
+    </div>
+    <div class="quiz-fb" id="fb-qq3"></div>
+  </div>
+
+  <div class="quiz-q" id="qq4">
+    <p>4. Given P(Noun→Verb) = 0.5 and P(Verb→Adjective) = 0.6, what is P(Noun→Verb→Adjective)?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="ans(this,'qq4',false)">a) 1.1</button>
+      <button class="quiz-opt" onclick="ans(this,'qq4',false)">b) 0.56</button>
+      <button class="quiz-opt" onclick="ans(this,'qq4',true)">c) 0.30</button>
+      <button class="quiz-opt" onclick="ans(this,'qq4',false)">d) 0.06</button>
+    </div>
+    <div class="quiz-fb" id="fb-qq4"></div>
+  </div>
+
+  <div class="quiz-q" id="qq5">
+    <p>5. In HMM for POS tagging, what are the "hidden states"?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="ans(this,'qq5',false)">a) The actual words in the sentence</button>
+      <button class="quiz-opt" onclick="ans(this,'qq5',true)">b) The POS tags (Noun, Verb, etc.)</button>
+      <button class="quiz-opt" onclick="ans(this,'qq5',false)">c) The transition probabilities</button>
+      <button class="quiz-opt" onclick="ans(this,'qq5',false)">d) The indexed documents</button>
+    </div>
+    <div class="quiz-fb" id="fb-qq5"></div>
+  </div>
+
+  <div class="quiz-q" id="qq6">
+    <p>6. Which preprocessing step removes words like "the", "is", "a" from text?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="ans(this,'qq6',false)">a) Stemming</button>
+      <button class="quiz-opt" onclick="ans(this,'qq6',false)">b) Tokenization</button>
+      <button class="quiz-opt" onclick="ans(this,'qq6',true)">c) Stopword Removal</button>
+      <button class="quiz-opt" onclick="ans(this,'qq6',false)">d) Lemmatization</button>
+    </div>
+    <div class="quiz-fb" id="fb-qq6"></div>
+  </div>
+
+  <div class="quiz-q" id="qq7">
+    <p>7. "studies → studi" is an example of which preprocessing technique?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="ans(this,'qq7',false)">a) Lemmatization</button>
+      <button class="quiz-opt" onclick="ans(this,'qq7',true)">b) Stemming</button>
+      <button class="quiz-opt" onclick="ans(this,'qq7',false)">c) Tokenization</button>
+      <button class="quiz-opt" onclick="ans(this,'qq7',false)">d) POS Tagging</button>
+    </div>
+    <div class="quiz-fb" id="fb-qq7"></div>
+  </div>
+
+  <div class="quiz-q" id="qq8">
+    <p>8. Which visualization technique is best for showing the most frequent words in a document?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="ans(this,'qq8',false)">a) Line Graph</button>
+      <button class="quiz-opt" onclick="ans(this,'qq8',true)">b) Word Cloud</button>
+      <button class="quiz-opt" onclick="ans(this,'qq8',false)">c) Network Graph</button>
+      <button class="quiz-opt" onclick="ans(this,'qq8',false)">d) Pie Chart</button>
+    </div>
+    <div class="quiz-fb" id="fb-qq8"></div>
+  </div>
+
+  <div class="quiz-q" id="qq9">
+    <p>9. WSD using WordNet — where word meanings are compared with dictionary definitions — is called:</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="ans(this,'qq9',false)">a) Supervised WSD</button>
+      <button class="quiz-opt" onclick="ans(this,'qq9',false)">b) Unsupervised WSD</button>
+      <button class="quiz-opt" onclick="ans(this,'qq9',true)">c) Dictionary-Based WSD</button>
+      <button class="quiz-opt" onclick="ans(this,'qq9',false)">d) Neural WSD</button>
+    </div>
+    <div class="quiz-fb" id="fb-qq9"></div>
+  </div>
+
+  <div class="score-card" id="score-card">
+    <h2>🏆 Your Score</h2>
+    <p id="score-text" style="font-size:1.15rem;font-weight:700;margin-bottom:6px;"></p>
+    <p id="score-msg"></p>
+  </div>
+
+</div><!-- /quiz -->
+
+</div><!-- /main -->
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>
+    <a href="https://kpsingh.in" target="_blank">kpsingh.in</a> &nbsp;·&nbsp;
+    B.Sc. Data Science &nbsp;·&nbsp; Unit IV — Introduction to Text Mining &nbsp;·&nbsp;
+    <a href="https://kpsingh.in/nlp" target="_blank">← Back to NLP Course</a>
+  </p>
+</footer>
+
+<button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+  // ── Tab Switching ──
+  function showTab(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (btn) btn.classList.add('active');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  // ── Bar Chart (Visualization section) ──
+  const barData = [
+    { word: 'battery', count: 142, color: '#e85c5c' },
+    { word: 'screen',  count: 98,  color: '#e8b84b' },
+    { word: 'camera',  count: 87,  color: '#4ecb7a' },
+    { word: 'price',   count: 73,  color: '#5b9cf6' },
+    { word: 'speed',   count: 61,  color: '#a78bfa' },
+  ];
+  const maxCount = 142;
+  const bc = document.getElementById('barchart');
+  if (bc) {
+    let html = '';
+    barData.forEach(d => {
+      const pct = Math.round((d.count / maxCount) * 100);
+      html += `
+        <div style="display:flex;align-items:center;gap:12px;margin:7px 0;">
+          <div style="width:70px;font-family:monospace;font-size:0.78rem;color:#8a90a8;text-align:right;">${d.word}</div>
+          <div style="flex:1;background:#0f1630;border-radius:4px;overflow:hidden;height:22px;">
+            <div style="width:${pct}%;height:100%;background:${d.color};border-radius:4px;display:flex;align-items:center;padding-left:8px;transition:width 1s ease;">
+              <span style="font-size:0.72rem;font-weight:700;color:#0a1020;">${d.count}</span>
+            </div>
+          </div>
+        </div>`;
+    });
+    bc.innerHTML = html;
+  }
+
+  // ── Quiz Logic ──
+  const correct_fb = {
+    'qq1': 'Correct! Text Mining works on unstructured data like articles, emails, and social media posts.',
+    'qq2': 'Right! An inverted index maps every word to the list of documents containing it — enabling instant search.',
+    'qq3': 'Correct! POS = Part of Speech. Tagging assigns grammar categories to each word.',
+    'qq4': 'Correct! P = 0.5 × 0.6 = 0.30. In HMM, multiply transition probabilities along the chain.',
+    'qq5': 'Right! In HMM for POS tagging, the words are observable but the POS tags are the "hidden" states we want to find.',
+    'qq6': 'Correct! Stopword removal eliminates common low-meaning words to focus on important terms.',
+    'qq7': 'Right! Stemming crudely chops word endings — "studies" becomes "studi", which is not a real word.',
+    'qq8': 'Correct! Word Clouds make the most frequent words visually larger — perfect for quick topic overview.',
+    'qq9': 'Correct! Dictionary-based (knowledge-based) WSD uses resources like WordNet — the Lesk Algorithm is the classic example.'
+  };
+  const wrong_fb = {
+    'qq1': 'Not quite. Text mining works on unstructured text — emails, articles, tweets — not structured tables.',
+    'qq2': 'Not quite. An inverted index is the key structure — it maps words to document lists for instant lookup.',
+    'qq3': 'Not quite. In NLP context, POS = Part of Speech (Noun, Verb, Adjective, etc.).',
+    'qq4': 'Not quite. Multiply the probabilities: 0.5 × 0.6 = 0.30. Do not add them.',
+    'qq5': 'Not quite. The words we can see are observations. The POS tags we want to find are the hidden states.',
+    'qq6': 'Not quite. Stopword removal specifically targets frequent low-meaning words like "the", "is", "a".',
+    'qq7': 'Not quite. Stemming gives crude cuts (not always real words). Lemmatization gives real dictionary forms.',
+    'qq8': 'Not quite. Word Clouds are the classic technique for showing word frequency visually.',
+    'qq9': 'Not quite. Dictionary-based WSD (e.g. Lesk Algorithm) compares context with WordNet definitions.'
+  };
+
+  let answered = {};
+  let score = 0;
+  const total = 9;
+
+  function ans(btn, qid, isRight) {
+    if (answered[qid]) return;
+    answered[qid] = true;
+    btn.parentElement.querySelectorAll('.quiz-opt').forEach(o => o.disabled = true);
+    btn.classList.add(isRight ? 'correct' : 'wrong');
+    if (!isRight) {
+      btn.parentElement.querySelectorAll('.quiz-opt').forEach(o => {
+        if (o.onclick.toString().includes(',true)')) o.classList.add('correct');
+      });
+    } else { score++; }
+    const fb = document.getElementById('fb-' + qid);
+    fb.textContent = isRight ? '✅ ' + correct_fb[qid] : '❌ ' + wrong_fb[qid];
+    fb.className = 'quiz-fb show ' + (isRight ? 'ok' : 'no');
+    const cnt = Object.keys(answered).length;
+    document.getElementById('pbar').style.width = Math.round(cnt/total*100) + '%';
+    document.getElementById('plabel').textContent = cnt + ' / ' + total + ' answered';
+    if (cnt === total) {
+      const card = document.getElementById('score-card');
+      card.style.display = 'block';
+      document.getElementById('score-text').textContent = score + ' / ' + total + ' correct (' + Math.round(score/total*100) + '%)';
+      const msgs = [[9,'🌟 Perfect! You have mastered Unit IV — Text Mining!'],[7,'🎉 Excellent work! Just a couple of topics to revisit.'],[5,'👍 Good effort! Review HMM and Indexing sections.'],[3,'📖 Keep going — re-read the notes carefully, you\'ll get there!'],[0,'💪 Don\'t give up! Start from Section 1 and go step by step.']];
+      for (const [min,msg] of msgs) { if (score >= min) { document.getElementById('score-msg').textContent = msg; break; } }
+      card.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+  }
+</script>
+
+</body>
+</html>
