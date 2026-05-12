@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NLP Unit III — Syntax Parsing & Semantic Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e17;
+    --surface: #1a1929;
+    --surface2: #221f35;
+    --border: #2e2a4a;
+    --accent: #ff6b6b;
+    --accent2: #ffd93d;
+    --accent3: #6bcb77;
+    --accent4: #4d96ff;
+    --text: #fffffe;
+    --muted: #a7a3c2;
+    --tag-bg: rgba(77,150,255,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    background: linear-gradient(135deg, #0f0e17 0%, #1a0e2e 50%, #0e1a2e 100%);
+    padding: 60px 40px 50px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(77,150,255,0.15), transparent);
+    pointer-events: none;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: var(--tag-bg);
+    border: 1px solid rgba(77,150,255,0.3);
+    color: var(--accent4);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 14px;
+  }
+  .hero h1 span { color: var(--accent4); }
+  .hero p {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 560px;
+    margin: 0 auto 30px;
+  }
+  .hero-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  /* ─── NAV TABS ─── */
+  .tab-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 18px 30px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .tab-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--muted);
+    font-family: 'Sora', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 7px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--text); background: var(--surface2); }
+  .tab-btn.active {
+    background: var(--accent4);
+    color: #fff;
+    border-color: var(--accent4);
+  }
+
+  /* ─── MAIN ─── */
+  .main { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .section { display: none; animation: fadeIn 0.4s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--accent4);
+    border-radius: 16px 16px 0 0;
+  }
+  .card.green::before { background: var(--accent3); }
+  .card.yellow::before { background: var(--accent2); }
+  .card.red::before { background: var(--accent); }
+
+  .card h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--accent4);
+    margin: 20px 0 8px;
+  }
+  .card.green h3 { color: var(--accent3); }
+  .card.yellow h3 { color: var(--accent2); }
+  .card.red h3 { color: var(--accent); }
+
+  .card p { color: #ccc8e8; font-size: 0.95rem; margin-bottom: 10px; }
+
+  /* ─── CONCEPT BOX ─── */
+  .concept-box {
+    background: rgba(77,150,255,0.08);
+    border: 1px solid rgba(77,150,255,0.25);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-size: 0.9rem;
+    color: #c8d8ff;
+  }
+  .concept-box.green { background: rgba(107,203,119,0.08); border-color: rgba(107,203,119,0.25); color: #c8f0cc; }
+  .concept-box.yellow { background: rgba(255,217,61,0.08); border-color: rgba(255,217,61,0.25); color: #fff0b0; }
+  .concept-box.red { background: rgba(255,107,107,0.08); border-color: rgba(255,107,107,0.25); color: #ffd0d0; }
+
+  /* ─── CODE / RULE BOX ─── */
+  .rule-box {
+    background: #0d0c18;
+    border: 1px solid #2a2740;
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: #a5f3fc;
+    margin: 12px 0;
+    line-height: 1.8;
+    overflow-x: auto;
+  }
+  .rule-box .arrow { color: #ffd93d; }
+  .rule-box .nt { color: #ff6b6b; }
+  .rule-box .t { color: #6bcb77; }
+  .rule-box .comment { color: #555; font-style: italic; }
+
+  /* ─── PARSE TREE SVG WRAPPER ─── */
+  .tree-wrap {
+    background: #0d0c18;
+    border: 1px solid #2a2740;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    overflow-x: auto;
+    text-align: center;
+  }
+  .tree-wrap svg { max-width: 100%; }
+
+  /* ─── COMPARISON TABLE ─── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin: 14px 0;
+  }
+  th {
+    background: var(--surface2);
+    color: var(--accent4);
+    font-weight: 600;
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(46,42,74,0.6);
+    color: #ccc8e8;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(77,150,255,0.04); }
+
+  /* ─── DEFINITION TERM ─── */
+  .def-term {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    background: var(--tag-bg);
+    color: var(--accent4);
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-weight: 600;
+  }
+
+  /* ─── EXAMPLE SENTENCE ─── */
+  .example-sent {
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--accent2);
+    background: rgba(255,217,61,0.06);
+    border-left: 3px solid var(--accent2);
+    padding: 10px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 10px 0;
+  }
+
+  /* ─── SRL SENTENCE HIGHLIGHTER ─── */
+  .srl-box { margin: 14px 0; }
+  .srl-sent {
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 2.2;
+    margin-bottom: 10px;
+  }
+  .role {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0 2px;
+  }
+  .role-agent { background: rgba(107,203,119,0.2); color: #6bcb77; border: 1px solid rgba(107,203,119,0.4); }
+  .role-action { background: rgba(255,107,107,0.2); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.4); }
+  .role-theme { background: rgba(255,217,61,0.2); color: #ffd93d; border: 1px solid rgba(255,217,61,0.4); }
+  .role-instr { background: rgba(77,150,255,0.2); color: #4d96ff; border: 1px solid rgba(77,150,255,0.4); }
+  .role-recv { background: rgba(200,130,255,0.2); color: #c882ff; border: 1px solid rgba(200,130,255,0.4); }
+  .role-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .role-legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted); }
+  .role-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* ─── QUIZ ─── */
+  .quiz-q {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .quiz-q p { font-weight: 600; font-size: 0.95rem; color: var(--text); margin-bottom: 14px; }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-align: left;
+    cursor: pointer;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.88rem;
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+  .quiz-opt:hover { border-color: var(--accent4); color: var(--text); background: rgba(77,150,255,0.07); }
+  .quiz-opt.correct { background: rgba(107,203,119,0.15); border-color: #6bcb77; color: #6bcb77; }
+  .quiz-opt.wrong { background: rgba(255,107,107,0.12); border-color: #ff6b6b; color: #ff6b6b; }
+  .quiz-feedback { font-size: 0.82rem; margin-top: 8px; padding: 8px 12px; border-radius: 7px; display: none; }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.ok { background: rgba(107,203,119,0.1); color: #6bcb77; }
+  .quiz-feedback.no { background: rgba(255,107,107,0.1); color: #ff8888; }
+
+  /* ─── PROGRESS ─── */
+  .progress-bar-wrap { background: var(--surface2); border-radius: 8px; height: 6px; overflow: hidden; margin-bottom: 6px; }
+  .progress-bar-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--accent4), var(--accent3)); transition: width 0.5s ease; }
+  .progress-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 20px; }
+
+  /* ─── ACTIVITY BLOCK ─── */
+  .activity {
+    background: var(--surface2);
+    border: 1px dashed #3a3660;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .activity-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 8px;
+  }
+  .activity p { color: #ccc8e8; font-size: 0.92rem; }
+
+  /* ─── BADGE ─── */
+  .badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .badge-hot { background: rgba(255,107,107,0.2); color: var(--accent); border: 1px solid rgba(255,107,107,0.4); }
+  .badge-new { background: rgba(107,203,119,0.2); color: var(--accent3); border: 1px solid rgba(107,203,119,0.4); }
+
+  /* ─── EMOJI ICON ─── */
+  .icon { font-size: 1.3rem; }
+
+  /* ─── SCROLL TO TOP ─── */
+  .back-top {
+    position: fixed; bottom: 28px; right: 24px;
+    background: var(--accent4); color: #fff;
+    border: none; border-radius: 50%;
+    width: 44px; height: 44px; font-size: 1.2rem;
+    cursor: pointer; box-shadow: 0 4px 20px rgba(77,150,255,0.4);
+    transition: transform 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .back-top:hover { transform: translateY(-3px); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 600px) {
+    .hero { padding: 40px 20px 36px; }
+    .main { padding: 24px 14px 60px; }
+    .card { padding: 20px 18px; }
+    .tab-bar { padding: 12px 14px; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">B.Sc Data Science · 2nd Semester · Unit III</div>
+  <h1>NLP: <span>Syntax Parsing</span><br>&amp; Semantic Analysis</h1>
+  <p>Progressive, beginner-friendly notes — from zero jargon to exam-ready understanding.</p>
+  <div class="hero-chips">
+    <span class="chip">🌳 Parse Trees</span>
+    <span class="chip">📐 CFG Rules</span>
+    <span class="chip">🔍 WSD</span>
+    <span class="chip">🎭 Semantic Roles</span>
+    <span class="chip">🧠 Discourse Analysis</span>
+    <span class="chip">📊 PCFGs</span>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('intro')">🚀 Start Here</button>
+  <button class="tab-btn" onclick="showTab('cfg')">📐 CFG &amp; Parsing</button>
+  <button class="tab-btn" onclick="showTab('trees')">🌳 Parse Trees</button>
+  <button class="tab-btn" onclick="showTab('sem')">🧠 Semantics</button>
+  <button class="tab-btn" onclick="showTab('wsd')">🔍 WSD</button>
+  <button class="tab-btn" onclick="showTab('srl')">🎭 SRL</button>
+  <button class="tab-btn" onclick="showTab('advanced')">📊 Advanced Topics</button>
+  <button class="tab-btn" onclick="showTab('quiz')">✏️ Practice Quiz</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- ═══════ SECTION: INTRO ═══════ -->
+<div id="intro" class="section active">
+
+  <div class="card">
+    <h2><span class="icon">🚀</span> What is NLP, Really?</h2>
+    <p>Natural Language Processing (NLP) is about making computers <strong>understand human language</strong> — the way we write and speak every day.</p>
+    <div class="concept-box">
+      <strong>Think of it this way:</strong> When you ask Google "What is the capital of France?", the computer must understand your words, figure out what you're asking, and find the right answer. That whole process is NLP.
+    </div>
+    <h3>The Levels of Language Understanding</h3>
+    <p>NLP works in layers — from the surface structure of words all the way to meaning:</p>
+    <table>
+      <tr><th>Level</th><th>What it Studies</th><th>Example</th></tr>
+      <tr><td>Morphology</td><td>Word forms</td><td>"running" → run + ing</td></tr>
+      <tr><td><strong>Syntax</strong></td><td>Sentence structure (grammar)</td><td>"The cat sat" — is this grammatically correct?</td></tr>
+      <tr><td><strong>Semantics</strong></td><td>Meaning of words &amp; sentences</td><td>What does "bank" mean here?</td></tr>
+      <tr><td>Pragmatics</td><td>Meaning in context / intent</td><td>"Can you pass the salt?" = Please pass it.</td></tr>
+      <tr><td>Discourse</td><td>Multi-sentence understanding</td><td>Linking "he" to "Rahul" in a paragraph</td></tr>
+    </table>
+  </div>
+
+  <div class="card green">
+    <h2><span class="icon">🧩</span> Syntax vs Semantics — The Core Difference</h2>
+    <div class="concept-box green">
+      <strong>Syntax</strong> = Grammar rules. Is the sentence structured correctly?<br>
+      <strong>Semantics</strong> = Meaning. Does the sentence make sense?
+    </div>
+    <h3>Classic Example</h3>
+    <div class="example-sent">"Colorless green ideas sleep furiously."</div>
+    <p>This sentence is <strong>syntactically correct</strong> (follows grammar rules) but <strong>semantically meaningless</strong> (makes no real-world sense). This shows they are two different things!</p>
+    <table>
+      <tr><th></th><th>Syntax</th><th>Semantics</th></tr>
+      <tr><td>Focus</td><td>Structure / Form</td><td>Meaning / Content</td></tr>
+      <tr><td>Question asked</td><td>"Is it grammatical?"</td><td>"What does it mean?"</td></tr>
+      <tr><td>Tools used</td><td>CFG, Parse Trees</td><td>WSD, SRL, Logic</td></tr>
+      <tr><td>Example correct</td><td>"The cat sat on mat."</td><td>"Bank" = riverside or financial?</td></tr>
+    </table>
+  </div>
+
+  <div class="card yellow">
+    <h2><span class="icon">📖</span> Key Terminology — Learn These First</h2>
+    <p>Before we dive deep, let's build your vocabulary with these essential terms:</p>
+
+    <h3>Parsing</h3>
+    <p><span class="def-term">Parsing</span> = Breaking a sentence into its grammatical parts and showing how they relate to each other. Like labeling the skeleton of a sentence.</p>
+    <div class="example-sent">"The dog barked." → Subject (The dog) + Verb (barked)</div>
+
+    <h3>Parse Tree</h3>
+    <p>A <span class="def-term">Parse Tree</span> is a diagram (tree shape) that shows how a sentence is broken down according to grammar rules — from the sentence level all the way down to individual words.</p>
+
+    <h3>Ambiguity</h3>
+    <p><span class="def-term">Ambiguity</span> = When a word or sentence has more than one possible meaning. This is one of the biggest challenges in NLP!</p>
+    <div class="example-sent">"I saw a bat." → A wooden bat? A flying animal?</div>
+
+    <h3>Treebank</h3>
+    <p>A <span class="def-term">Treebank</span> is a large collection of sentences that have already been parsed by human experts. Computers use treebanks to <em>learn</em> how to parse new sentences.</p>
+    <div class="concept-box yellow">📚 Think of a treebank as a textbook with solved examples that a computer studies to learn grammar.</div>
+  </div>
+
+</div>
+
+<!-- ═══════ SECTION: CFG ═══════ -->
+<div id="cfg" class="section">
+
+  <div class="card">
+    <h2><span class="icon">📐</span> Context Free Grammar (CFG) <span class="badge badge-hot">Very Important</span></h2>
+    <p>CFG is a set of <strong>rules</strong> that describe how sentences can be formed. It's the most common tool for parsing English sentences in NLP.</p>
+
+    <h3>The 4 Components of CFG</h3>
+    <table>
+      <tr><th>Component</th><th>Symbol</th><th>Meaning</th><th>Example</th></tr>
+      <tr><td>Non-terminals</td><td>N</td><td>Grammar categories (can expand further)</td><td>S, NP, VP, PP</td></tr>
+      <tr><td>Terminals</td><td>Σ</td><td>Actual words (cannot expand)</td><td>"dog", "runs", "the"</td></tr>
+      <tr><td>Rules</td><td>R</td><td>How non-terminals expand</td><td>NP → Det N</td></tr>
+      <tr><td>Start Symbol</td><td>S</td><td>The top of every sentence</td><td>S (Sentence)</td></tr>
+    </table>
+
+    <h3>Common Non-Terminal Symbols</h3>
+    <div class="rule-box">
+      <span class="nt">S</span>   → Sentence (the whole thing)<br>
+      <span class="nt">NP</span>  → Noun Phrase  (e.g., "The big dog")<br>
+      <span class="nt">VP</span>  → Verb Phrase  (e.g., "runs fast")<br>
+      <span class="nt">PP</span>  → Prepositional Phrase (e.g., "on the table")<br>
+      <span class="nt">Det</span> → Determiner   (a, an, the)<br>
+      <span class="nt">N</span>   → Noun          (dog, girl, book)<br>
+      <span class="nt">V</span>   → Verb          (eats, runs, reads)<br>
+      <span class="nt">Adj</span> → Adjective     (big, smart, red)<br>
+      <span class="nt">P</span>   → Preposition   (on, in, with, by)
+    </div>
+
+    <h3>Writing CFG Rules — Step by Step</h3>
+    <div class="concept-box">
+      <strong>Rule format:</strong> LEFT SIDE → RIGHT SIDE<br>
+      Read as: "A LEFT SIDE can be rewritten as RIGHT SIDE"
+    </div>
+
+    <p>Let's build CFG rules for the sentence:</p>
+    <div class="example-sent">"The girl reads a book."</div>
+
+    <div class="rule-box">
+      <span class="comment">Step 1 — Start: a sentence has a NP + VP</span><br>
+      <span class="nt">S</span>   <span class="arrow">→</span>  <span class="nt">NP</span> <span class="nt">VP</span><br><br>
+      <span class="comment">Step 2 — NP rules: a noun phrase can be Det + N</span><br>
+      <span class="nt">NP</span>  <span class="arrow">→</span>  <span class="nt">Det</span> <span class="nt">N</span><br><br>
+      <span class="comment">Step 3 — VP rules: a verb phrase is V + NP</span><br>
+      <span class="nt">VP</span>  <span class="arrow">→</span>  <span class="nt">V</span> <span class="nt">NP</span><br><br>
+      <span class="comment">Step 4 — Lexical rules: non-terminals → actual words</span><br>
+      <span class="nt">Det</span> <span class="arrow">→</span>  <span class="t">"the"</span> | <span class="t">"a"</span><br>
+      <span class="nt">N</span>   <span class="arrow">→</span>  <span class="t">"girl"</span> | <span class="t">"book"</span><br>
+      <span class="nt">V</span>   <span class="arrow">→</span>  <span class="t">"reads"</span>
+    </div>
+
+    <h3>More CFG Practice — "The boy eats an apple."</h3>
+    <div class="rule-box">
+      <span class="nt">S</span>   <span class="arrow">→</span>  <span class="nt">NP</span> <span class="nt">VP</span><br>
+      <span class="nt">NP</span>  <span class="arrow">→</span>  <span class="nt">Det</span> <span class="nt">N</span><br>
+      <span class="nt">VP</span>  <span class="arrow">→</span>  <span class="nt">V</span> <span class="nt">NP</span><br>
+      <span class="nt">Det</span> <span class="arrow">→</span>  <span class="t">"the"</span> | <span class="t">"an"</span><br>
+      <span class="nt">N</span>   <span class="arrow">→</span>  <span class="t">"boy"</span> | <span class="t">"apple"</span><br>
+      <span class="nt">V</span>   <span class="arrow">→</span>  <span class="t">"eats"</span>
+    </div>
+
+    <div class="activity">
+      <div class="activity-title">✏️ Your Turn — Class Activity</div>
+      <p>Write CFG rules for: <strong>"A cat chased the mouse."</strong></p>
+      <p style="margin-top:8px;color:var(--muted);font-size:0.85rem;">Hint: Start with S → NP VP, then fill in the NP and VP rules, then the lexical rules.</p>
+    </div>
+  </div>
+
+  <div class="card green">
+    <h2><span class="icon">📊</span> Statistical Parsing &amp; PCFG</h2>
+    <p>Normal CFG just tells us what's grammatically <em>possible</em>. But many sentences are ambiguous — there are multiple valid parse trees! <strong>Statistical parsing</strong> tells us which interpretation is most <em>likely</em>.</p>
+
+    <h3>Probabilistic Context Free Grammar (PCFG)</h3>
+    <p>A <span class="def-term">PCFG</span> is a CFG where every rule has a <strong>probability</strong> attached to it. The probabilities for each non-terminal must add up to 1.0.</p>
+
+    <div class="rule-box">
+      <span class="comment">Example PCFG rules with probabilities:</span><br>
+      <span class="nt">NP</span> <span class="arrow">→</span> <span class="nt">Det</span> <span class="nt">N</span>     [0.5]  <span class="comment"> ← 50% of NPs are Det+N</span><br>
+      <span class="nt">NP</span> <span class="arrow">→</span> <span class="nt">N</span>         [0.3]  <span class="comment"> ← 30% of NPs are just a Noun</span><br>
+      <span class="nt">NP</span> <span class="arrow">→</span> <span class="nt">Det</span> <span class="nt">Adj</span> <span class="nt">N</span> [0.2]  <span class="comment"> ← 20% of NPs are Det+Adj+N</span><br>
+      <span class="comment">                   ——————</span><br>
+      <span class="comment">                   Total = 1.0 ✓</span>
+    </div>
+
+    <div class="concept-box green">
+      <strong>How it works:</strong> When two parse trees are both valid, the computer calculates the probability of each tree by multiplying all the rule probabilities used. The tree with the <em>higher probability wins</em>.
+    </div>
+
+    <h3>Lexicalized PCFG</h3>
+    <p>A regular PCFG doesn't care about which specific words are used — only grammar categories. A <span class="def-term">Lexicalized PCFG</span> also considers the actual words (the <em>head word</em> of each phrase) to make even better predictions.</p>
+    <div class="concept-box">
+      For example: "ate with a fork" — "fork" is more likely to be an instrument than a subject, so the parser uses this word-level information to pick the correct structure.
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════ SECTION: PARSE TREES ═══════ -->
+<div id="trees" class="section">
+
+  <div class="card">
+    <h2><span class="icon">🌳</span> Parse Trees — Reading &amp; Drawing <span class="badge badge-hot">Very Important</span></h2>
+    <p>A parse tree is like a family tree for a sentence. The <strong>root</strong> (top) is always S (Sentence), and we branch down to individual words at the <strong>leaves</strong> (bottom).</p>
+
+    <div class="concept-box">
+      <strong>Rules for drawing parse trees:</strong><br>
+      ① Always start at the top with <strong>S</strong><br>
+      ② Branch into NP and VP<br>
+      ③ Keep expanding non-terminals (grammar categories)<br>
+      ④ The bottom row must be <strong>actual words</strong> (terminals)<br>
+      ⑤ Every word in the sentence must appear as a leaf
+    </div>
+
+    <h3>Example 1 — "The boy plays cricket."</h3>
+    <div class="tree-wrap">
+      <svg viewBox="0 0 480 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace" font-size="14">
+        <!-- root -->
+        <text x="230" y="30" fill="#4d96ff" text-anchor="middle" font-weight="700">S</text>
+        <!-- S → NP VP -->
+        <line x1="230" y1="35" x2="110" y2="75" stroke="#2e2a4a" stroke-width="1.5"/>
+        <line x1="230" y1="35" x2="340" y2="75" stroke="#2e2a4a" stroke-width="1.5"/>
+        <text x="110" y="90" fill="#ff6b6b" text-anchor="middle" font-weight="700">NP</text>
+        <text x="340" y="90" fill="#ff6b6b" text-anchor="middle" font-weight="700">VP</text>
+        <!-- NP → Det N -->
+        <line x1="110" y1="95" x2="55" y2="135" stroke="#2e2a4a" stroke-width="1.5"/>
+        <line x1="110" y1="95" x2="160" y2="135" stroke="#2e2a4a" stroke-width="1.5"/>
+        <text x="55" y="150" fill="#a7a3c2" text-anchor="middle">Det</text>
+        <text x="160" y="150" fill="#a7a3c2" text-anchor="middle">N</text>
+        <!-- VP → V NP -->
+        <line x1="340" y1="95" x2="295" y2="135" stroke="#2e2a4a" stroke-width="1.5"/>
+        <line x1="340" y1="95" x2="400" y2="135" stroke="#2e2a4a" stroke-width="1.5"/>
+        <text x="295" y="150" fill="#a7a3c2" text-anchor="middle">V</text>
+        <text x="400" y="150" fill="#ff6b6b" text-anchor="middle">NP</text>
+        <!-- NP(cricket) → N -->
+        <line x1="400" y1="155" x2="400" y2="195" stroke="#2e2a4a" stroke-width="1.5"/>
+        <text x="400" y="210" fill="#a7a3c2" text-anchor="middle">N</text>
+        <!-- Terminals -->
+        <line x1="55" y1="155" x2="55" y2="235" stroke="#2e2a4a" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="160" y1="155" x2="160" y2="235" stroke="#2e2a4a" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="295" y1="155" x2="295" y2="235" stroke="#2e2a4a" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="400" y1="215" x2="400" y2="235" stroke="#2e2a4a" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="55" y="252" fill="#6bcb77" text-anchor="middle" font-style="italic">the</text>
+        <text x="160" y="252" fill="#6bcb77" text-anchor="middle" font-style="italic">boy</text>
+        <text x="295" y="252" fill="#6bcb77" text-anchor="middle" font-style="italic">plays</text>
+        <text x="400" y="252" fill="#6bcb77" text-anchor="middle" font-style="italic">cricket</text>
+        <!-- Legend -->
+        <rect x="10" y="270" width="460" height="22" fill="#0d0c18" rx="6"/>
+        <text x="20" y="284" fill="#4d96ff" font-size="10">■ Blue = S (root)</text>
+        <text x="120" y="284" fill="#ff6b6b" font-size="10">■ Red = Non-terminals</text>
+        <text x="260" y="284" fill="#a7a3c2" font-size="10">■ Grey = POS tags</text>
+        <text x="370" y="284" fill="#6bcb77" font-size="10">■ Green = Words</text>
+      </svg>
+    </div>
+
+    <h3>Example 2 — "The girl reads a book."</h3>
+    <div class="tree-wrap">
+      <svg viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace" font-size="14">
+        <text x="250" y="30" fill="#4d96ff" text-anchor="middle" font-weight="700">S</text>
+        <line x1="250" y1="35" x2="120" y2="75" stroke="#2e2a4a" stroke-width="1.5"/>
+        <line x1="250" y1="35" x2="370" y2="75" stroke="#2e2a4a" stroke-width="1.5"/>
+        <text x="120" y="90" fill="#ff6b6b" text-anchor="middle" font-weight="700">NP</text>
+        <text x="370" y="90" fill="#ff6b6b" text-anchor="middle" font-weight="700">VP</text>
+        <line x1="120" y1="95" x2="65" y2="135" stroke="#2e2a4a" stroke-width="1.5"/>
+        <line x1="120" y1="95" x2="175" y2="135" stroke="#2e2a4a" stroke-width="1.5"/>
+        <text x="65" y="150" fill="#a7a3c2" text-anchor="middle">Det</text>
+        <text x="175" y="150" fill="#a7a3c2" text-anchor="middle">N</text>
+        <line x1="370" y1="95" x2="310" y2="135" stroke="#2e2a4a" stroke-width="1.5"/>
+        <line x1="370" y1="95" x2="430" y2="135" stroke="#2e2a4a" stroke-width="1.5"/>
+        <text x="310" y="150" fill="#a7a3c2" text-anchor="middle">V</text>
+        <text x="430" y="150" fill="#ff6b6b" text-anchor="middle">NP</text>
+        <line x1="430" y1="155" x2="390" y2="195" stroke="#2e2a4a" stroke-width="1.5"/>
+        <line x1="430" y1="155" x2="470" y2="195" stroke="#2e2a4a" stroke-width="1.5"/>
+        <text x="390" y="210" fill="#a7a3c2" text-anchor="middle">Det</text>
+        <text x="470" y="210" fill="#a7a3c2" text-anchor="middle">N</text>
+        <line x1="65" y1="155" x2="65" y2="235" stroke="#2e2a4a" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="175" y1="155" x2="175" y2="235" stroke="#2e2a4a" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="310" y1="155" x2="310" y2="235" stroke="#2e2a4a" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="390" y1="215" x2="390" y2="235" stroke="#2e2a4a" stroke-width="1" stroke-dasharray="3,3"/>
+        <line x1="470" y1="215" x2="470" y2="235" stroke="#2e2a4a" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="65" y="252" fill="#6bcb77" text-anchor="middle" font-style="italic">the</text>
+        <text x="175" y="252" fill="#6bcb77" text-anchor="middle" font-style="italic">girl</text>
+        <text x="310" y="252" fill="#6bcb77" text-anchor="middle" font-style="italic">reads</text>
+        <text x="390" y="252" fill="#6bcb77" text-anchor="middle" font-style="italic">a</text>
+        <text x="470" y="252" fill="#6bcb77" text-anchor="middle" font-style="italic">book</text>
+        <rect x="10" y="270" width="500" height="22" fill="#0d0c18" rx="6"/>
+        <text x="20" y="284" fill="#4d96ff" font-size="10">■ Blue = S</text>
+        <text x="90" y="284" fill="#ff6b6b" font-size="10">■ Red = Phrases (NP, VP)</text>
+        <text x="260" y="284" fill="#a7a3c2" font-size="10">■ Grey = POS Tags</text>
+        <text x="380" y="284" fill="#6bcb77" font-size="10">■ Green = Words</text>
+      </svg>
+    </div>
+
+    <h3>How to Draw a Parse Tree — Step by Step</h3>
+    <div class="rule-box">
+Step 1: Write S at the top.<br>
+Step 2: Split S into NP (subject) and VP (predicate).<br>
+Step 3: Expand NP → usually Det + N (or just N)<br>
+Step 4: Expand VP → usually V + NP (or just V)<br>
+Step 5: Continue expanding NPs inside VP the same way.<br>
+Step 6: At the bottom, replace each tag with the actual word.<br>
+    </div>
+
+    <div class="activity">
+      <div class="activity-title">🏁 Parse Tree Competition</div>
+      <p>Draw the parse tree for: <strong>"The dog chased the cat."</strong></p>
+      <p style="margin-top:8px;color:var(--muted);font-size:0.85rem;">Structure: S → NP VP | NP → Det N | VP → V NP</p>
+    </div>
+  </div>
+
+  <div class="card yellow">
+    <h2><span class="icon">🔀</span> Structural Ambiguity</h2>
+    <p>Sometimes a sentence can be parsed in <strong>two different ways</strong>, giving two different meanings. This is called <strong>structural ambiguity</strong>.</p>
+
+    <div class="example-sent">"I saw the man with a telescope."</div>
+
+    <p>Meaning 1: <em>I used a telescope to see the man.</em></p>
+    <p>Meaning 2: <em>I saw the man who had a telescope.</em></p>
+
+    <div class="concept-box yellow">
+      In the first meaning, "with a telescope" is part of the VP (how I saw).<br>
+      In the second meaning, "with a telescope" is part of the NP (which man).
+    </div>
+    <p>This is why PCFGs and statistical methods are needed — to pick the more probable parse!</p>
+  </div>
+
+</div>
+
+<!-- ═══════ SECTION: SEMANTICS ═══════ -->
+<div id="sem" class="section">
+
+  <div class="card">
+    <h2><span class="icon">🧠</span> Semantic Analysis <span class="badge badge-hot">Very Important</span></h2>
+    <p>Semantic analysis is how NLP systems extract and represent the <strong>meaning</strong> of language. It goes beyond grammar to understand <em>what is actually being said</em>.</p>
+
+    <h3>What Does Semantic Analysis Do?</h3>
+    <table>
+      <tr><th>Task</th><th>Example</th><th>What it figures out</th></tr>
+      <tr><td>Word meaning</td><td>"bank"</td><td>River bank or financial bank?</td></tr>
+      <tr><td>Sentence meaning</td><td>"The key opened the door."</td><td>Key = instrument, door = theme</td></tr>
+      <tr><td>Relation finding</td><td>"Paris is the capital of France."</td><td>capital-of (Paris, France)</td></tr>
+      <tr><td>Inference</td><td>"John broke the vase."</td><td>The vase is now broken.</td></tr>
+    </table>
+
+    <h3>Applications of Semantic Analysis</h3>
+    <div class="concept-box">
+      <strong>🤖 Chatbots:</strong> Understanding what the user is asking (intent detection)<br>
+      <strong>🎙️ Voice Assistants (Siri/Alexa):</strong> Extracting entities — "Set alarm for <em>7 AM</em>"<br>
+      <strong>🔎 Google Search:</strong> Finding pages that match the <em>meaning</em> of your query<br>
+      <strong>🌍 Machine Translation:</strong> Preserving meaning across languages<br>
+      <strong>❓ Question Answering:</strong> Finding the exact answer in a paragraph
+    </div>
+  </div>
+
+  <div class="card green">
+    <h2><span class="icon">📚</span> Lexical Semantics</h2>
+    <p><span class="def-term">Lexical semantics</span> studies the <strong>meaning of individual words</strong> and the relationships between words.</p>
+
+    <h3>Key Concepts in Lexical Semantics</h3>
+    <table>
+      <tr><th>Concept</th><th>Definition</th><th>Example</th></tr>
+      <tr><td><strong>Synonymy</strong></td><td>Words with same meaning</td><td>big = large = huge</td></tr>
+      <tr><td><strong>Antonymy</strong></td><td>Words with opposite meaning</td><td>hot ↔ cold</td></tr>
+      <tr><td><strong>Polysemy</strong></td><td>One word, multiple related meanings</td><td>bank (finance), bank (river)</td></tr>
+      <tr><td><strong>Hyponymy</strong></td><td>A word is a subtype of another</td><td>rose IS-A flower</td></tr>
+      <tr><td><strong>Meronymy</strong></td><td>Part-whole relationship</td><td>finger IS-PART-OF hand</td></tr>
+    </table>
+
+    <h3>WordNet — The Lexical Database</h3>
+    <p>WordNet is a famous dictionary-like resource used in NLP. It groups words into <span class="def-term">synsets</span> (synonym sets) and records all these relationships. Many WSD systems use WordNet.</p>
+    <div class="concept-box green">
+      WordNet entry for "bank":<br>
+      • Sense 1: a financial institution<br>
+      • Sense 2: a long ridge of earth (river bank)<br>
+      • Sense 3: to tilt sideways (aircraft banking)
+    </div>
+  </div>
+
+  <div class="card yellow">
+    <h2><span class="icon">🔗</span> Compositional Semantics</h2>
+    <p><span class="def-term">Compositional semantics</span> is the idea that the meaning of a sentence is built up from the meanings of its individual words, following grammatical structure.</p>
+
+    <div class="concept-box yellow">
+      <strong>Principle of Compositionality:</strong><br>
+      "The meaning of a whole is a function of the meanings of its parts."
+    </div>
+
+    <p>Example: <em>"John loves Mary"</em></p>
+    <div class="rule-box">
+      loves(John, Mary)<br>
+      <span class="comment">= loves is the predicate, John is the subject, Mary is the object</span>
+    </div>
+
+    <p>Example: <em>"Every student passed the exam"</em></p>
+    <div class="rule-box">
+      ∀x. student(x) → passed(x, exam)<br>
+      <span class="comment">= For all x, if x is a student, then x passed the exam</span>
+    </div>
+
+    <div class="concept-box yellow">
+      Don't worry about the logic symbols for now — just remember the key idea: <strong>sentence meaning = sum of word meanings + structure</strong>.
+    </div>
+  </div>
+
+  <div class="card red">
+    <h2><span class="icon">💬</span> Discourse Analysis</h2>
+    <p><span class="def-term">Discourse analysis</span> studies language <strong>beyond the single sentence level</strong> — how sentences connect to form coherent paragraphs and conversations.</p>
+
+    <h3>What Problems Does Discourse Analysis Solve?</h3>
+    <div class="concept-box red">
+      <strong>Coreference Resolution:</strong><br>
+      "Ravi went to the market. <em>He</em> bought vegetables."<br>
+      → Discourse analysis figures out that "He" = "Ravi"
+    </div>
+    <div class="concept-box red" style="margin-top:10px;">
+      <strong>Discourse Coherence:</strong><br>
+      Sentences in a text must logically connect. "It rained. I opened an umbrella." makes sense. "It rained. I ate a sandwich." is incoherent (no logical connection shown).
+    </div>
+
+    <h3>Real-Life Applications</h3>
+    <table>
+      <tr><th>Application</th><th>How Discourse Analysis Helps</th></tr>
+      <tr><td>Automatic Summarization</td><td>Identifies most important sentences across a document</td></tr>
+      <tr><td>Chatbots</td><td>Remembers context across multiple conversation turns</td></tr>
+      <tr><td>Machine Translation</td><td>Ensures pronouns and references are correctly translated</td></tr>
+    </table>
+  </div>
+
+</div>
+
+<!-- ═══════ SECTION: WSD ═══════ -->
+<div id="wsd" class="section">
+
+  <div class="card">
+    <h2><span class="icon">🔍</span> Ambiguity &amp; Word Sense Disambiguation <span class="badge badge-hot">Very Important</span></h2>
+
+    <h3>What is Ambiguity?</h3>
+    <p>Ambiguity occurs when a word, phrase, or sentence has more than one interpretation. In NLP this is a huge challenge because computers need a single, definite meaning.</p>
+
+    <h3>Types of Ambiguity</h3>
+    <table>
+      <tr><th>Type</th><th>Level</th><th>Example</th></tr>
+      <tr><td><strong>Lexical Ambiguity</strong></td><td>Word level</td><td>"I saw a bat" — animal or cricket bat?</td></tr>
+      <tr><td><strong>Structural Ambiguity</strong></td><td>Sentence level</td><td>"Flying planes can be dangerous."</td></tr>
+      <tr><td><strong>Pragmatic Ambiguity</strong></td><td>Context level</td><td>"Can you open the window?" — question or request?</td></tr>
+    </table>
+
+    <div class="example-sent">"I went to the bank."</div>
+    <div class="concept-box">
+      ❓ Did the speaker go to a <strong>river bank</strong> for a picnic?<br>
+      ❓ Or did they go to a <strong>financial bank</strong> to deposit money?<br>
+      Without more context, we can't tell. This is <strong>lexical ambiguity</strong>.
+    </div>
+  </div>
+
+  <div class="card green">
+    <h2><span class="icon">🎯</span> Word Sense Disambiguation (WSD) — 3 Approaches</h2>
+    <p>WSD is the task of figuring out <strong>which sense/meaning of a word</strong> is intended in a given context.</p>
+
+    <!-- Approach 1 -->
+    <h3>① Supervised Approach</h3>
+    <p>Train a machine learning model using <strong>labeled examples</strong> — sentences where humans have already tagged each word with the correct sense.</p>
+    <div class="rule-box">
+Training data examples:<br>
+"I deposit money in the <span class="t">bank</span>."   → SENSE: financial<br>
+"We picnicked on the river <span class="t">bank</span>." → SENSE: geography<br>
+"The <span class="t">bank</span> holds our savings."   → SENSE: financial<br>
+<span class="comment">The model learns: "deposit", "money", "savings" → financial sense</span>
+    </div>
+    <table>
+      <tr><th></th><th>Supervised WSD</th></tr>
+      <tr><td>Needs</td><td>Large labeled dataset</td></tr>
+      <tr><td>Accuracy</td><td>High (when enough training data)</td></tr>
+      <tr><td>Limitation</td><td>Expensive to label; may not handle new words well</td></tr>
+    </table>
+
+    <!-- Approach 2 -->
+    <h3>② Dictionary-Based (Knowledge-Based) Approach</h3>
+    <p>Uses a dictionary or lexical resource like <strong>WordNet</strong> to find the sense whose definition overlaps most with the surrounding words in the sentence.</p>
+    <div class="concept-box green">
+      <strong>Lesk Algorithm (classic example):</strong><br>
+      Context: "He flew to the bank to deposit his money."<br>
+      → Count overlap between context words and each WordNet definition.<br>
+      → "financial institution for depositing money" — high overlap ✓<br>
+      → "sloping land beside a river" — low overlap ✗<br>
+      → Chosen sense: <strong>financial</strong>
+    </div>
+    <table>
+      <tr><th></th><th>Dictionary-Based WSD</th></tr>
+      <tr><td>Needs</td><td>WordNet or similar dictionary</td></tr>
+      <tr><td>Accuracy</td><td>Moderate</td></tr>
+      <tr><td>Advantage</td><td>No labeled training data needed</td></tr>
+    </table>
+
+    <!-- Approach 3 -->
+    <h3>③ Unsupervised Approach</h3>
+    <p>Groups word occurrences into <strong>clusters</strong> based on similar surrounding words — without any human labels. Each cluster represents a potential "sense".</p>
+    <div class="concept-box">
+      Sentences with "bank" near "river", "water", "fish" → Cluster A (geography sense)<br>
+      Sentences with "bank" near "loan", "account", "deposit" → Cluster B (financial sense)
+    </div>
+    <table>
+      <tr><th></th><th>Unsupervised WSD</th></tr>
+      <tr><td>Needs</td><td>Large unlabeled corpus</td></tr>
+      <tr><td>Accuracy</td><td>Lower but useful when no labels exist</td></tr>
+      <tr><td>Advantage</td><td>Can discover new, unknown senses</td></tr>
+    </table>
+
+    <div class="activity">
+      <div class="activity-title">🦇 WSD Game — "Bat"</div>
+      <p>Identify which sense of "bat" is used in each sentence:</p>
+      <p style="margin-top:8px;">1. "The batsman hit the ball with his <strong>bat</strong>."</p>
+      <p>2. "A <strong>bat</strong> flew out of the cave at night."</p>
+      <p>3. "She didn't <strong>bat</strong> an eyelid when she heard the news."</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════ SECTION: SRL ═══════ -->
+<div id="srl" class="section">
+
+  <div class="card">
+    <h2><span class="icon">🎭</span> Semantic Role Labeling (SRL) <span class="badge badge-hot">Very Important</span></h2>
+    <p>SRL answers the question: <strong>Who did what to whom, where, when, and how?</strong> It assigns roles to the different parts of a sentence.</p>
+
+    <h3>Common Semantic Roles</h3>
+    <table>
+      <tr><th>Role</th><th>Meaning</th><th>Example</th></tr>
+      <tr><td><span class="role role-agent">Agent</span></td><td>The doer of the action</td><td>Ravi in "Ravi opened the door"</td></tr>
+      <tr><td><span class="role role-theme">Theme/Patient</span></td><td>The thing affected by the action</td><td>the door in "Ravi opened the door"</td></tr>
+      <tr><td><span class="role role-instr">Instrument</span></td><td>The tool used for the action</td><td>a key in "opened the door with a key"</td></tr>
+      <tr><td><span class="role role-recv">Recipient</span></td><td>The receiver (often with give/send)</td><td>Rahul in "Riya gave Rahul a book"</td></tr>
+      <tr><td style="color:#c8d8ff">Location</td><td>Where the action happens</td><td>in the park</td></tr>
+      <tr><td style="color:#c8d8ff">Time</td><td>When the action happens</td><td>yesterday, at noon</td></tr>
+    </table>
+
+    <h3>Example 1 — "Ravi opened the door with a key."</h3>
+    <div class="srl-box">
+      <div class="srl-sent">
+        <span class="role role-agent">Ravi</span>
+        <span class="role role-action">opened</span>
+        <span class="role role-theme">the door</span>
+        <span style="color:var(--muted)">with</span>
+        <span class="role role-instr">a key</span>
+        .
+      </div>
+      <div class="role-legend">
+        <div class="role-legend-item"><div class="role-dot" style="background:#6bcb77"></div>Agent (who did it)</div>
+        <div class="role-legend-item"><div class="role-dot" style="background:#ff6b6b"></div>Action (the verb)</div>
+        <div class="role-legend-item"><div class="role-dot" style="background:#ffd93d"></div>Theme (what was affected)</div>
+        <div class="role-legend-item"><div class="role-dot" style="background:#4d96ff"></div>Instrument (tool used)</div>
+      </div>
+    </div>
+
+    <h3>Example 2 — "Riya gave Rahul a book."</h3>
+    <div class="srl-box">
+      <div class="srl-sent">
+        <span class="role role-agent">Riya</span>
+        <span class="role role-action">gave</span>
+        <span class="role role-recv">Rahul</span>
+        <span class="role role-theme">a book</span>
+        .
+      </div>
+    </div>
+
+    <h3>Example 3 — "The chef cooked a meal in the kitchen."</h3>
+    <div class="srl-box">
+      <div class="srl-sent">
+        <span class="role role-agent">The chef</span>
+        <span class="role role-action">cooked</span>
+        <span class="role role-theme">a meal</span>
+        <span style="color:var(--muted)">in</span>
+        <span style="background:rgba(200,200,200,0.15);color:#ccc;border:1px solid #555;border-radius:6px;padding:2px 10px;font-size:0.85rem;font-weight:600;">the kitchen</span>
+        .
+      </div>
+      <p style="font-size:0.8rem;color:var(--muted);">Here "the kitchen" is a <strong>Location</strong> argument.</p>
+    </div>
+
+    <div class="activity">
+      <div class="activity-title">🎯 Identify the Roles</div>
+      <p>For the sentence: <strong>"Priya sent the report to her manager by email."</strong></p>
+      <p style="margin-top:8px;color:var(--muted);font-size:0.85rem;">
+        Identify: Agent | Action | Theme | Recipient | Instrument
+      </p>
+    </div>
+  </div>
+
+  <div class="card green">
+    <h2><span class="icon">🗺️</span> Semantic Parsing</h2>
+    <p><span class="def-term">Semantic parsing</span> is the process of converting a natural language sentence into a <strong>formal, machine-readable representation</strong> that a computer can execute or reason with.</p>
+
+    <h3>Why Do We Need It?</h3>
+    <div class="concept-box green">
+      "What movies were directed by Christopher Nolan after 2010?"<br>
+      → Human understands this easily.<br>
+      → But a database can only answer if we convert it to a query like:<br>
+      <span style="font-family:monospace;font-size:0.85rem;">SELECT title FROM movies WHERE director='Nolan' AND year &gt; 2010</span>
+    </div>
+
+    <h3>Real-Life Use Cases</h3>
+    <table>
+      <tr><th>Application</th><th>What Semantic Parsing Does</th></tr>
+      <tr><td>Voice Assistants</td><td>"Set alarm for 7 AM" → alarm(time=7:00)</td></tr>
+      <tr><td>Chatbot Booking</td><td>"Book a table for 2 at 8 PM" → reserve(seats=2, time=20:00)</td></tr>
+      <tr><td>Search Engines</td><td>Converts query to structured database lookup</td></tr>
+      <tr><td>Question Answering</td><td>Maps question to knowledge graph query</td></tr>
+    </table>
+  </div>
+
+</div>
+
+<!-- ═══════ SECTION: ADVANCED ═══════ -->
+<div id="advanced" class="section">
+
+  <div class="card">
+    <h2><span class="icon">📊</span> Grammar Formalisms &amp; Treebanks</h2>
+
+    <h3>Grammar Formalisms</h3>
+    <p>A <span class="def-term">grammar formalism</span> is a formal mathematical way of describing language structure. CFG is the most common, but others exist:</p>
+    <table>
+      <tr><th>Formalism</th><th>Key Feature</th><th>Use</th></tr>
+      <tr><td>CFG (Context-Free Grammar)</td><td>Rules independent of context</td><td>Standard sentence parsing</td></tr>
+      <tr><td>PCFG</td><td>CFG + probabilities</td><td>Resolving ambiguity statistically</td></tr>
+      <tr><td>Dependency Grammar</td><td>Words linked by dependency arcs</td><td>Modern NLP parsers (spaCy)</td></tr>
+      <tr><td>CCG (Combinatory Categorical Grammar)</td><td>Combines syntax + semantics</td><td>Advanced semantic parsing</td></tr>
+    </table>
+
+    <h3>Treebanks</h3>
+    <p>A <span class="def-term">treebank</span> is a corpus of sentences annotated with parse trees. They are essential for training and evaluating parsers.</p>
+    <div class="concept-box">
+      <strong>Penn Treebank</strong> — the most famous English treebank. Contains ~1 million words from Wall Street Journal articles, all parsed by human annotators.<br><br>
+      <strong>Universal Dependencies</strong> — a multilingual treebank project covering 100+ languages.
+    </div>
+
+    <h3>Why Are Treebanks Important?</h3>
+    <table>
+      <tr><th>Reason</th><th>Explanation</th></tr>
+      <tr><td>Training data</td><td>Parsers learn grammar patterns from annotated examples</td></tr>
+      <tr><td>Evaluation</td><td>We can measure parser accuracy against human annotations</td></tr>
+      <tr><td>Consistent annotation</td><td>Standardized labels allow different systems to be compared</td></tr>
+    </table>
+  </div>
+
+  <div class="card yellow">
+    <h2><span class="icon">⚖️</span> Features and Unification</h2>
+    <p>Sometimes CFG rules are too general — they allow grammatically wrong sentences like "The dogs runs." (plural subject with singular verb).</p>
+
+    <h3>Feature Structures</h3>
+    <p>We add <span class="def-term">features</span> (attribute-value pairs) to grammar rules to capture constraints like number, person, gender:</p>
+    <div class="rule-box">
+      <span class="nt">NP</span>[num=<span class="t">sing</span>]  <span class="arrow">→</span>  <span class="nt">Det</span>[num=<span class="t">sing</span>] <span class="nt">N</span>[num=<span class="t">sing</span>]<br>
+      <span class="nt">NP</span>[num=<span class="t">plur</span>]  <span class="arrow">→</span>  <span class="nt">Det</span>[num=<span class="t">plur</span>] <span class="nt">N</span>[num=<span class="t">plur</span>]<br><br>
+      <span class="comment">Now "The dogs run" ✓ but "The dogs runs" ✗ (feature mismatch)</span>
+    </div>
+
+    <h3>Unification</h3>
+    <p><span class="def-term">Unification</span> is the process of combining two feature structures — they merge only if their features are compatible (no contradictions).</p>
+    <div class="concept-box yellow">
+      [num = sing] + [num = sing] = [num = sing] ✓ (same = compatible)<br>
+      [num = sing] + [num = plur] = FAIL ✗ (contradiction = unification fails)
+    </div>
+  </div>
+
+  <div class="card red">
+    <h2><span class="icon">📋</span> Quick Reference Sheet</h2>
+    <p>Everything you need for exam answers — in one place.</p>
+
+    <h3>One-Line Definitions</h3>
+    <div class="rule-box">
+<span class="nt">Parsing</span>     = Breaking sentence into grammar components<br>
+<span class="nt">CFG</span>         = Set of rules describing sentence structure<br>
+<span class="nt">Parse Tree</span>  = Diagram showing hierarchical sentence structure<br>
+<span class="nt">Treebank</span>    = Database of human-annotated parse trees<br>
+<span class="nt">PCFG</span>        = CFG where each rule has a probability<br>
+<span class="nt">Semantics</span>   = Study of meaning in language<br>
+<span class="nt">Ambiguity</span>   = Multiple possible meanings for one sentence/word<br>
+<span class="nt">WSD</span>         = Identifying correct word sense from context<br>
+<span class="nt">SRL</span>         = Labeling WHO, WHAT, WHERE, HOW in a sentence<br>
+<span class="nt">Discourse</span>   = Analysis of language beyond single sentences<br>
+    </div>
+
+    <h3>3 WSD Approaches — Exam Comparison</h3>
+    <table>
+      <tr><th>Approach</th><th>Uses</th><th>Needs</th><th>Best When</th></tr>
+      <tr><td>Supervised</td><td>ML model</td><td>Labeled examples</td><td>Lots of training data</td></tr>
+      <tr><td>Dictionary-Based</td><td>WordNet / definitions</td><td>Lexical resource</td><td>No labeled data</td></tr>
+      <tr><td>Unsupervised</td><td>Clustering</td><td>Unlabeled corpus</td><td>Exploring unknown senses</td></tr>
+    </table>
+  </div>
+
+</div>
+
+<!-- ═══════ SECTION: QUIZ ═══════ -->
+<div id="quiz" class="section">
+
+  <div class="card">
+    <h2><span class="icon">✏️</span> Practice Quiz</h2>
+    <p>Test your understanding! Click an option — you'll see instantly if you're right.</p>
+    <div id="progress-wrap">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="pbar" style="width:0%"></div></div>
+      <div class="progress-label" id="plabel">0 / 8 answered</div>
+    </div>
+  </div>
+
+  <!-- Q1 -->
+  <div class="quiz-q" id="qq1">
+    <p>1. Which symbol represents the start of a sentence in CFG?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="answer(this,'qq1',false)">a) NP</button>
+      <button class="quiz-opt" onclick="answer(this,'qq1',false)">b) VP</button>
+      <button class="quiz-opt" onclick="answer(this,'qq1',true)">c) S</button>
+      <button class="quiz-opt" onclick="answer(this,'qq1',false)">d) PP</button>
+    </div>
+    <div class="quiz-feedback" id="fb-qq1"></div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="quiz-q" id="qq2">
+    <p>2. "I saw the man with a telescope" is an example of:</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="answer(this,'qq2',false)">a) Lexical ambiguity</button>
+      <button class="quiz-opt" onclick="answer(this,'qq2',true)">b) Structural ambiguity</button>
+      <button class="quiz-opt" onclick="answer(this,'qq2',false)">c) Pragmatic ambiguity</button>
+      <button class="quiz-opt" onclick="answer(this,'qq2',false)">d) Phonetic ambiguity</button>
+    </div>
+    <div class="quiz-feedback" id="fb-qq2"></div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="quiz-q" id="qq3">
+    <p>3. In the sentence "Ravi opened the door with a key", what semantic role does "a key" play?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="answer(this,'qq3',false)">a) Agent</button>
+      <button class="quiz-opt" onclick="answer(this,'qq3',false)">b) Theme</button>
+      <button class="quiz-opt" onclick="answer(this,'qq3',true)">c) Instrument</button>
+      <button class="quiz-opt" onclick="answer(this,'qq3',false)">d) Recipient</button>
+    </div>
+    <div class="quiz-feedback" id="fb-qq3"></div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="quiz-q" id="qq4">
+    <p>4. Which WSD approach uses WordNet or a dictionary to find the correct sense?</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="answer(this,'qq4',false)">a) Supervised</button>
+      <button class="quiz-opt" onclick="answer(this,'qq4',true)">b) Dictionary-based</button>
+      <button class="quiz-opt" onclick="answer(this,'qq4',false)">c) Unsupervised</button>
+      <button class="quiz-opt" onclick="answer(this,'qq4',false)">d) Rule-based</button>
+    </div>
+    <div class="quiz-feedback" id="fb-qq4"></div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="quiz-q" id="qq5">
+    <p>5. "Colorless green ideas sleep furiously" is:</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="answer(this,'qq5',false)">a) Syntactically wrong, semantically correct</button>
+      <button class="quiz-opt" onclick="answer(this,'qq5',true)">b) Syntactically correct, semantically wrong</button>
+      <button class="quiz-opt" onclick="answer(this,'qq5',false)">c) Both correct</button>
+      <button class="quiz-opt" onclick="answer(this,'qq5',false)">d) Both wrong</button>
+    </div>
+    <div class="quiz-feedback" id="fb-qq5"></div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="quiz-q" id="qq6">
+    <p>6. In a PCFG, the probabilities of all rules for a given non-terminal must:</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="answer(this,'qq6',false)">a) All equal 0.5</button>
+      <button class="quiz-opt" onclick="answer(this,'qq6',false)">b) Be greater than 1</button>
+      <button class="quiz-opt" onclick="answer(this,'qq6',true)">c) Sum to 1.0</button>
+      <button class="quiz-opt" onclick="answer(this,'qq6',false)">d) Be prime numbers</button>
+    </div>
+    <div class="quiz-feedback" id="fb-qq6"></div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="quiz-q" id="qq7">
+    <p>7. A treebank is:</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="answer(this,'qq7',false)">a) A type of decision tree algorithm</button>
+      <button class="quiz-opt" onclick="answer(this,'qq7',false)">b) A database of word definitions</button>
+      <button class="quiz-opt" onclick="answer(this,'qq7',true)">c) A corpus of sentences with annotated parse trees</button>
+      <button class="quiz-opt" onclick="answer(this,'qq7',false)">d) A visual tool for drawing trees</button>
+    </div>
+    <div class="quiz-feedback" id="fb-qq7"></div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="quiz-q" id="qq8">
+    <p>8. Discourse analysis is concerned with:</p>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="answer(this,'qq8',false)">a) Identifying parts of speech</button>
+      <button class="quiz-opt" onclick="answer(this,'qq8',false)">b) Drawing parse trees for single sentences</button>
+      <button class="quiz-opt" onclick="answer(this,'qq8',true)">c) Understanding language across multiple sentences</button>
+      <button class="quiz-opt" onclick="answer(this,'qq8',false)">d) Counting words in a document</button>
+    </div>
+    <div class="quiz-feedback" id="fb-qq8"></div>
+  </div>
+
+  <div class="card green" id="score-card" style="display:none; margin-top:8px;">
+    <h2><span class="icon">🏆</span> Your Score</h2>
+    <p id="score-text" style="font-size:1.2rem;font-weight:700;"></p>
+    <p id="score-msg" style="margin-top:8px;color:#ccc8e8;"></p>
+  </div>
+
+</div><!-- end quiz -->
+
+</div><!-- end main -->
+
+<button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+  // Tab switching
+  function showTab(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  // Quiz
+  const feedbacks = {
+    'qq1': 'Correct! S stands for Sentence and is always the start/root symbol in CFG.',
+    'qq2': 'Right! The same sentence has two different grammatical structures — that\'s structural ambiguity.',
+    'qq3': 'Exactly! "a key" is the Instrument — the tool used to perform the action.',
+    'qq4': 'Correct! Dictionary-based (knowledge-based) approaches use WordNet or similar resources.',
+    'qq5': 'Right! Chomsky\'s famous example shows syntax ≠ semantics.',
+    'qq6': 'Correct! All rule probabilities for one non-terminal must sum to exactly 1.0.',
+    'qq7': 'Exactly! A treebank is a corpus where human experts have annotated sentences with parse trees.',
+    'qq8': 'Correct! Discourse analysis goes beyond single sentences to study coherence and coreference.'
+  };
+  const wrongFeedbacks = {
+    'qq1': 'Not quite. NP = Noun Phrase, VP = Verb Phrase, PP = Prepositional Phrase. The sentence start symbol is S.',
+    'qq2': 'Not quite. Lexical ambiguity is one word with multiple meanings. Here, the whole sentence structure is ambiguous.',
+    'qq3': 'Not quite. The Agent is who does the action (Ravi), Theme is what\'s affected (door), Instrument is the tool.',
+    'qq4': 'Not quite. Supervised uses labeled training examples; unsupervised uses clustering without labels.',
+    'qq5': 'Not quite. The sentence follows grammar rules perfectly — adjective, noun, verb, adverb — so it\'s syntactically OK.',
+    'qq6': 'Not quite. PCFG probabilities must sum to 1.0 (like any probability distribution).',
+    'qq7': 'Not quite. A treebank is specifically a corpus with human-annotated parse tree structures.',
+    'qq8': 'Not quite. Discourse analysis works at a higher level than single sentences or single words.'
+  };
+
+  let answered = {};
+  let correct = 0;
+  const total = 8;
+
+  function answer(btn, qid, isCorrect) {
+    if (answered[qid]) return;
+    answered[qid] = true;
+
+    const opts = btn.parentElement.querySelectorAll('.quiz-opt');
+    opts.forEach(o => o.disabled = true);
+    btn.classList.add(isCorrect ? 'correct' : 'wrong');
+
+    if (!isCorrect) {
+      opts.forEach(o => {
+        if (o.onclick.toString().includes('true')) o.classList.add('correct');
+      });
+    } else {
+      correct++;
+    }
+
+    const fb = document.getElementById('fb-' + qid);
+    fb.textContent = isCorrect ? '✅ ' + feedbacks[qid] : '❌ ' + wrongFeedbacks[qid];
+    fb.className = 'quiz-feedback show ' + (isCorrect ? 'ok' : 'no');
+
+    const count = Object.keys(answered).length;
+    const pct = Math.round((count / total) * 100);
+    document.getElementById('pbar').style.width = pct + '%';
+    document.getElementById('plabel').textContent = count + ' / ' + total + ' answered';
+
+    if (count === total) {
+      const card = document.getElementById('score-card');
+      card.style.display = 'block';
+      document.getElementById('score-text').textContent = correct + ' / ' + total + ' correct (' + Math.round(correct/total*100) + '%)';
+      const msgs = [
+        [8, '🌟 Perfect score! You have mastered Unit III!'],
+        [7, '🎉 Excellent! Almost perfect — review any missed topics.'],
+        [5, '👍 Good effort! Revisit the sections you got wrong.'],
+        [3, '📖 Keep studying — go back to the notes and try again!'],
+        [0, '💪 Don\'t give up! Read through the notes carefully and retry.']
+      ];
+      for (const [min, msg] of msgs) {
+        if (correct >= min) { document.getElementById('score-msg').textContent = msg; break; }
+      }
+      card.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+  }
+</script>
+
+</body>
+</html>
