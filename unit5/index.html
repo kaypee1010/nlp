@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unit V — Information Extraction & Search Engines</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-soft: #3d3d5c;
+    --paper: #fdfaf4;
+    --cream: #f5f0e8;
+    --rule: #d4c9b0;
+    --accent: #c0392b;
+    --accent2: #2471a3;
+    --accent3: #1e8449;
+    --gold: #d4a017;
+    --highlight: #fff3cd;
+    --highlight2: #d6eaf8;
+    --highlight3: #d5f5e3;
+    --tag-bg: #2c3e50;
+    --tag-fg: #ecf0f1;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.8;
+    background: var(--paper);
+    color: var(--ink);
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 18px 60px;
+  }
+
+  /* ── COVER ── */
+  .cover {
+    border: 3px double var(--ink);
+    padding: 40px 30px;
+    text-align: center;
+    margin-bottom: 40px;
+    background: var(--cream);
+    position: relative;
+  }
+  .cover::before {
+    content: '';
+    position: absolute; inset: 6px;
+    border: 1px solid var(--rule);
+    pointer-events: none;
+  }
+  .cover-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+  }
+  .cover h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 5vw, 42px);
+    font-weight: 900;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .cover h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(14px, 3vw, 20px);
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .cover-rule { border: none; border-top: 2px solid var(--ink); width: 60px; margin: 16px auto; }
+  .cover-meta {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 2;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .cover-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-top: 16px;
+    letter-spacing: 1px;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--cream);
+    border-left: 4px solid var(--ink);
+    padding: 24px 28px;
+    margin-bottom: 40px;
+  }
+  .toc h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    margin-bottom: 14px;
+    color: var(--ink);
+  }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin-bottom: 5px; font-size: 14px; }
+  .toc a { color: var(--accent2); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* ── SECTION HEADINGS ── */
+  .unit-section {
+    margin-bottom: 48px;
+    border-top: 2px solid var(--ink);
+    padding-top: 28px;
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+    display: block;
+  }
+  h2.section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 900;
+    color: var(--ink);
+    margin-bottom: 20px;
+    line-height: 1.2;
+  }
+  h3.sub-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin: 28px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--rule);
+  }
+  h4.mini-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 20px 0 8px;
+  }
+
+  /* ── BODY TEXT ── */
+  p { margin-bottom: 14px; }
+  ul, ol { padding-left: 22px; margin-bottom: 14px; }
+  li { margin-bottom: 6px; }
+  strong { color: var(--ink); }
+  em { color: var(--ink-soft); }
+
+  /* ── CALLOUT BOXES ── */
+  .box {
+    border-radius: 2px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 15px;
+  }
+  .box-def {
+    background: var(--highlight2);
+    border-left: 4px solid var(--accent2);
+  }
+  .box-def .box-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .box-example {
+    background: var(--highlight3);
+    border-left: 4px solid var(--accent3);
+  }
+  .box-example .box-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent3);
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .box-exam {
+    background: #fef9e7;
+    border-left: 4px solid var(--gold);
+    border-right: 1px solid #f9e79f;
+  }
+  .box-exam .box-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #b7950b;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .box-note {
+    background: #fdf2f8;
+    border-left: 4px solid #9b59b6;
+  }
+  .box-note .box-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #7d3c98;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  /* ── DIAGRAM / FLOW ── */
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 20px 0;
+    padding: 18px;
+    background: var(--cream);
+    border: 1px solid var(--rule);
+  }
+  .flow-step {
+    background: var(--ink);
+    color: white;
+    padding: 8px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .flow-arrow {
+    font-size: 20px;
+    color: var(--accent);
+    font-weight: bold;
+  }
+  .flow-caption {
+    width: 100%;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+    font-style: italic;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+  th {
+    background: var(--ink);
+    color: white;
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: var(--cream); }
+  tr:hover td { background: var(--highlight2); }
+
+  /* ── TAG / PILL ── */
+  .tag {
+    display: inline-block;
+    background: var(--tag-bg);
+    color: var(--tag-fg);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 2px 9px;
+    border-radius: 2px;
+    margin: 2px;
+  }
+  .tag-red { background: var(--accent); }
+  .tag-blue { background: var(--accent2); }
+  .tag-green { background: var(--accent3); }
+
+  /* ── HIGHLIGHT INLINE ── */
+  mark { background: #fff3a3; padding: 1px 4px; border-radius: 2px; }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--cream);
+    border: 1px solid var(--rule);
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-size: 13px;
+  }
+
+  /* ── ANALOGY BLOCK ── */
+  .analogy {
+    margin: 20px 0;
+    padding: 18px 22px;
+    background: #fef5e4;
+    border: 1px dashed var(--gold);
+    border-radius: 2px;
+  }
+  .analogy::before {
+    content: '🇮🇳  Indian Analogy';
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #b7950b;
+    margin-bottom: 8px;
+  }
+
+  /* ── EXAM Q PANEL ── */
+  .exam-panel {
+    background: var(--ink);
+    color: white;
+    padding: 20px 24px;
+    margin: 28px 0;
+    border-radius: 2px;
+  }
+  .exam-panel h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #f39c12;
+    margin-bottom: 10px;
+  }
+  .exam-panel ul { color: #ecf0f1; font-size: 14px; }
+  .exam-panel li { margin-bottom: 5px; }
+
+  /* ── NER HIGHLIGHT SENTENCE ── */
+  .ner-sentence {
+    font-size: 17px;
+    line-height: 2.2;
+    padding: 16px;
+    background: var(--cream);
+    border: 1px solid var(--rule);
+    margin: 14px 0;
+  }
+  .ner-person { background: #fadbd8; padding: 2px 6px; border-radius: 3px; border-bottom: 2px solid #e74c3c; }
+  .ner-place  { background: #d5f5e3; padding: 2px 6px; border-radius: 3px; border-bottom: 2px solid #27ae60; }
+  .ner-org    { background: #d6eaf8; padding: 2px 6px; border-radius: 3px; border-bottom: 2px solid #2980b9; }
+  .ner-time   { background: #fef9e7; padding: 2px 6px; border-radius: 3px; border-bottom: 2px solid #f39c12; }
+  .ner-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+  .ner-legend span { padding: 3px 10px; border-radius: 3px; }
+
+  /* ── INDEX VISUAL ── */
+  .index-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2px;
+    margin: 16px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+  .index-key {
+    background: var(--accent2);
+    color: white;
+    padding: 8px 12px;
+    font-weight: 600;
+  }
+  .index-val {
+    background: var(--cream);
+    padding: 8px 12px;
+    border: 1px solid var(--rule);
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 30px 0;
+  }
+
+  /* ── PAGE BREAK HINT ── */
+  @media print {
+    .unit-section { page-break-before: always; }
+    .cover { page-break-after: always; }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    body { font-size: 15px; padding: 14px 12px 50px; }
+    .flow { flex-direction: column; align-items: flex-start; }
+    .flow-arrow { transform: rotate(90deg); }
+    .index-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 2px solid var(--ink);
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════ COVER ════════════════════ -->
+<div class="cover">
+  <div class="cover-tag">Introduction to NLP &nbsp;·&nbsp; B.Sc DS</div>
+  <h1>Unit V</h1>
+  <h2>Information Extraction &amp; Search Engines</h2>
+  <hr class="cover-rule">
+  <div class="cover-meta">
+    Topics: IE · Entity Extraction · NER · Phrase Extraction<br>
+    Search Engines · Indexing · Queries · Web Mining<br>
+    Crawlers · Summarization · Information Monitor
+  </div>
+  <div class="cover-badge">Exam-Ready Notes · Zero Prior Knowledge Required</div>
+</div>
+
+<!-- ════════════════════ TOC ════════════════════ -->
+<div class="toc">
+  <h3>📋 Table of Contents</h3>
+  <ol>
+    <li><a href="#ie">Information Extraction (IE) — Introduction &amp; Systems</a></li>
+    <li><a href="#entity">Entity Extraction &amp; Named Entity Recognition (NER)</a></li>
+    <li><a href="#phrase">Phrase Extraction</a></li>
+    <li><a href="#ie-apps">Applications of IE</a></li>
+    <li><a href="#search">Search Engines — History &amp; Working</a></li>
+    <li><a href="#indexing">Indexing — Text &amp; Multimedia</a></li>
+    <li><a href="#query">Queries &amp; Searching</a></li>
+    <li><a href="#webmining">Web Mining, Crawlers &amp; Web Structure</a></li>
+    <li><a href="#summarization">Summarization &amp; Information Monitor</a></li>
+    <li><a href="#diff">IE vs. Information Retrieval — Key Differences</a></li>
+    <li><a href="#exam">Quick Revision &amp; Exam Tips</a></li>
+  </ol>
+</div>
+
+
+<!-- ════════════════════ SECTION 1 ════════════════════ -->
+<div class="unit-section" id="ie">
+  <span class="section-num">Section 01</span>
+  <h2 class="section-title">Information Extraction (IE)</h2>
+
+  <div class="box box-def">
+    <span class="box-label">Definition</span>
+    <strong>Information Extraction (IE)</strong> is the task of automatically identifying and pulling out specific, structured facts from large amounts of unstructured text, so that a computer can store and use them easily.
+  </div>
+
+  <p>Think about how much text exists in the world — news articles, doctor's reports, WhatsApp messages, legal documents, product reviews. Most of this text is <em>unstructured</em>, meaning it is written for humans, not machines. IE is the process of teaching computers to read this text and extract the useful pieces of information automatically.</p>
+
+  <div class="analogy">
+    Imagine you receive 1,000 job applications as plain text emails. Manually reading all of them to find each applicant's <em>name, qualification, and experience</em> would take days. An IE system reads all 1,000 emails in seconds and fills a table with those details automatically.
+  </div>
+
+  <h3 class="sub-title">What does IE do?</h3>
+  <p>IE converts <strong>unstructured text → structured data</strong>. For example:</p>
+
+  <table>
+    <tr><th>Raw Text (Unstructured)</th><th>Extracted Info (Structured)</th></tr>
+    <tr>
+      <td>"Rahul Sharma joined TCS in Pune on 3rd March 2023."</td>
+      <td>
+        Person: Rahul Sharma<br>
+        Organization: TCS<br>
+        Location: Pune<br>
+        Date: 03-03-2023
+      </td>
+    </tr>
+    <tr>
+      <td>"Patient Meena Gupta, 45F, was diagnosed with diabetes at AIIMS Delhi."</td>
+      <td>
+        Patient: Meena Gupta<br>
+        Age: 45, Gender: F<br>
+        Condition: Diabetes<br>
+        Hospital: AIIMS Delhi
+      </td>
+    </tr>
+  </table>
+
+  <h3 class="sub-title">Architecture of an IE System</h3>
+  <p>An IE system processes text in several ordered steps, called a <em>pipeline</em>:</p>
+
+  <div class="flow">
+    <div class="flow-step">1. Raw Text Input</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">2. Tokenization</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">3. POS Tagging</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">4. NER</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">5. Relation Extraction</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">6. Structured Output (Table/DB)</div>
+    <div class="flow-caption">IE System Pipeline — text flows left to right through each processing stage</div>
+  </div>
+
+  <h4 class="mini-title">Explanation of Each Step</h4>
+  <ol>
+    <li><strong>Raw Text Input:</strong> The system receives unstructured text — a news article, a report, a tweet, etc.</li>
+    <li><strong>Tokenization:</strong> The text is split into individual words or tokens. <br>Example: <code>"Riya visited Delhi"</code> → <code>["Riya", "visited", "Delhi"]</code></li>
+    <li><strong>POS Tagging (Part-of-Speech):</strong> Each token is labelled as noun, verb, adjective, etc. This helps the system understand the grammar.<br>Example: <code>Riya/NOUN  visited/VERB  Delhi/NOUN</code></li>
+    <li><strong>Named Entity Recognition (NER):</strong> Specific tokens are classified as Person, Place, Organization, Date, etc. (detailed in Section 2).</li>
+    <li><strong>Relation Extraction:</strong> The system identifies how entities relate to each other.<br>Example: <em>Riya</em> [VISITED] <em>Delhi</em></li>
+    <li><strong>Structured Output:</strong> Results are stored in a table, database, or knowledge graph that computers can easily query.</li>
+  </ol>
+
+  <div class="box box-exam">
+    <span class="box-label">⭐ Exam Tip</span>
+    The IE pipeline is a very common long-answer question (10–15 marks). Always draw/write it as a numbered flow from Raw Text → Structured Output and explain each step with an example.
+  </div>
+</div>
+
+
+<!-- ════════════════════ SECTION 2 ════════════════════ -->
+<div class="unit-section" id="entity">
+  <span class="section-num">Section 02</span>
+  <h2 class="section-title">Entity Extraction &amp; Named Entity Recognition (NER)</h2>
+
+  <div class="box box-def">
+    <span class="box-label">Definition — Entity Extraction</span>
+    <strong>Entity Extraction</strong> (also called Named Entity Recognition or NER) is the process of identifying and classifying real-world objects mentioned in text — such as people's names, place names, organization names, dates, and amounts — into pre-defined categories.
+  </div>
+
+  <h3 class="sub-title">Types of Named Entities</h3>
+  <table>
+    <tr><th>Entity Type</th><th>What it represents</th><th>Indian Examples</th></tr>
+    <tr><td><span class="tag tag-red">PERSON</span></td><td>Names of people</td><td>Narendra Modi, Virat Kohli, Priya Sharma</td></tr>
+    <tr><td><span class="tag tag-green">LOCATION</span></td><td>Cities, states, countries, rivers</td><td>Mumbai, Uttarakhand, Ganga, Himalaya</td></tr>
+    <tr><td><span class="tag tag-blue">ORGANIZATION</span></td><td>Companies, institutions, teams</td><td>ISRO, Infosys, IIT Delhi, BCCI</td></tr>
+    <tr><td><span class="tag">DATE/TIME</span></td><td>Dates, years, months</td><td>15th August 1947, January 2024</td></tr>
+    <tr><td><span class="tag">MONEY</span></td><td>Currency amounts</td><td>₹5,000, Rs. 2 crore</td></tr>
+    <tr><td><span class="tag">PERCENTAGE</span></td><td>Percentage values</td><td>7.5%, 12 percent</td></tr>
+  </table>
+
+  <h3 class="sub-title">NER in Action — Visual Example</h3>
+
+  <div class="ner-sentence">
+    <span class="ner-person">Riya</span> visited <span class="ner-place">Delhi</span> in <span class="ner-time">January</span> to meet representatives from <span class="ner-org">ISRO</span>.
+  </div>
+  <div class="ner-legend">
+    <span class="ner-person">PERSON</span>
+    <span class="ner-place">LOCATION</span>
+    <span class="ner-org">ORGANIZATION</span>
+    <span class="ner-time">DATE/TIME</span>
+  </div>
+
+  <br>
+
+  <div class="ner-sentence">
+    <span class="ner-org">Tata Motors</span> announced a new plant in <span class="ner-place">Pune</span> on <span class="ner-time">12 April 2024</span> with an investment of ₹3,000 crore.
+  </div>
+
+  <h3 class="sub-title">How Does NER Work?</h3>
+  <p>Modern NER systems use <strong>machine learning</strong> (especially deep learning models like BERT) trained on thousands of labelled sentences. They learn patterns like:</p>
+  <ul>
+    <li>Words after "Mr.", "Ms.", "Dr." are usually <em>Person</em> names.</li>
+    <li>Words after "in" or "at" are often <em>Locations</em>.</li>
+    <li>Words ending in "Ltd.", "Inc.", "Corp." are usually <em>Organizations</em>.</li>
+    <li>A four-digit number between 1900–2099 is likely a <em>Year</em>.</li>
+  </ul>
+
+  <div class="analogy">
+    NER is like a <strong>highlighter in your textbook</strong>. If someone asks you to highlight all place names in a paragraph, you are doing NER manually. The computer does the same thing automatically across millions of pages.
+  </div>
+
+  <div class="box box-exam">
+    <span class="box-label">⭐ Exam Tip</span>
+    NER is a <strong>Very High</strong> importance topic. In any long-answer question about NER: (1) give the definition, (2) list entity types with Indian examples, (3) show a labelled sentence, (4) mention applications in healthcare/social media.
+  </div>
+</div>
+
+
+<!-- ════════════════════ SECTION 3 ════════════════════ -->
+<div class="unit-section" id="phrase">
+  <span class="section-num">Section 03</span>
+  <h2 class="section-title">Phrase Extraction</h2>
+
+  <div class="box box-def">
+    <span class="box-label">Definition</span>
+    <strong>Phrase Extraction</strong> is the process of identifying meaningful multi-word groups (phrases) in a sentence that carry important information, as opposed to individual keywords.
+  </div>
+
+  <p>A single word like "hackathon" tells you something. But the phrase <mark>"national level hackathon"</mark> tells you much more. Phrase extraction helps systems capture this richer meaning.</p>
+
+  <h3 class="sub-title">Types of Phrases</h3>
+  <table>
+    <tr><th>Phrase Type</th><th>Abbreviation</th><th>Example</th></tr>
+    <tr><td>Noun Phrase</td><td>NP</td><td>"the new cricket stadium", "senior software engineer"</td></tr>
+    <tr><td>Verb Phrase</td><td>VP</td><td>"has announced", "will launch"</td></tr>
+    <tr><td>Prepositional Phrase</td><td>PP</td><td>"in New Delhi", "before the match"</td></tr>
+  </table>
+
+  <h3 class="sub-title">Example — Classroom Activity</h3>
+  <div class="box box-example">
+    <span class="box-label">Activity</span>
+    <strong>Sentence:</strong> "The university organized a national level hackathon."<br><br>
+    <strong>Important phrases extracted:</strong>
+    <ul style="margin-top:8px">
+      <li><mark>the university</mark> → Noun Phrase (who did it)</li>
+      <li><mark>organized</mark> → Verb Phrase (the action)</li>
+      <li><mark>a national level hackathon</mark> → Noun Phrase (what was organized)</li>
+    </ul>
+  </div>
+
+  <h3 class="sub-title">Why is Phrase Extraction Important?</h3>
+  <ul>
+    <li><strong>Search engines</strong> use it to understand multi-word queries like "best biryani in Hyderabad."</li>
+    <li><strong>Summarization systems</strong> pick important phrases to create short summaries.</li>
+    <li><strong>Question answering</strong> systems extract phrases as answers.</li>
+    <li><strong>SEO (Search Engine Optimization)</strong> — website owners identify key phrases to rank better on Google.</li>
+  </ul>
+
+  <div class="analogy">
+    When you read a chapter and underline important parts — not individual words but meaningful groups — you are doing phrase extraction. Computers do this systematically across millions of documents.
+  </div>
+</div>
+
+
+<!-- ════════════════════ SECTION 4 ════════════════════ -->
+<div class="unit-section" id="ie-apps">
+  <span class="section-num">Section 04</span>
+  <h2 class="section-title">Applications of Information Extraction</h2>
+
+  <p>IE is one of the most practically useful areas of NLP. Below are the most important application domains with Indian-context examples:</p>
+
+  <h3 class="sub-title">1. Healthcare &amp; Medicine</h3>
+  <ul>
+    <li>Extract <strong>patient names, diagnoses, medications, dosages</strong> from doctor's notes and prescriptions.</li>
+    <li>Hospitals like AIIMS use IE to convert handwritten reports into digital records.</li>
+    <li>Drug interaction databases are built by extracting information from research papers.</li>
+  </ul>
+
+  <h3 class="sub-title">2. Social Media Monitoring</h3>
+  <ul>
+    <li>Extract <strong>product mentions, sentiments, event names</strong> from Twitter/X, Instagram, Facebook.</li>
+    <li>Political parties monitor public opinion by extracting entities and sentiments from crores of tweets.</li>
+    <li>Disaster management — during floods in Uttarakhand or Chennai, IE can extract <em>locations, casualty numbers, road names</em> from news feeds in real time.</li>
+  </ul>
+
+  <h3 class="sub-title">3. Banking &amp; Finance</h3>
+  <ul>
+    <li>Extract <strong>company names, transaction dates, amounts</strong> from financial news to power trading algorithms.</li>
+    <li>Banks use IE to process loan applications — automatically reading and extracting data from uploaded documents.</li>
+    <li>Fraud detection by extracting suspicious patterns from transaction descriptions.</li>
+  </ul>
+
+  <h3 class="sub-title">4. E-Commerce</h3>
+  <ul>
+    <li>Flipkart and Amazon use IE to extract <strong>product attributes</strong> (brand, size, colour, price) from seller descriptions.</li>
+    <li>Customer review analysis — extract opinions about specific product features.</li>
+    <li>Automatic catalogue creation from unstructured product listings.</li>
+  </ul>
+
+  <h3 class="sub-title">5. Legal &amp; Government</h3>
+  <ul>
+    <li>Extract relevant clauses, parties, and dates from legal contracts.</li>
+    <li>Government schemes: automatically extracting beneficiary details from application forms.</li>
+  </ul>
+
+  <div class="box box-exam">
+    <span class="box-label">⭐ Exam Tip</span>
+    For a 15-mark long answer on IE Applications, write at least 4 domains (Healthcare, Social Media, Banking, E-Commerce), give 2–3 specific points each, and add Indian examples. This pattern scores maximum marks.
+  </div>
+</div>
+
+
+<!-- ════════════════════ SECTION 5 ════════════════════ -->
+<div class="unit-section" id="search">
+  <span class="section-num">Section 05</span>
+  <h2 class="section-title">Search Engines — History &amp; Working</h2>
+
+  <div class="box box-def">
+    <span class="box-label">Definition</span>
+    A <strong>Search Engine</strong> is a software system that searches a large collection of documents (usually web pages) for content that matches a user's query, and returns a ranked list of relevant results.
+  </div>
+
+  <h3 class="sub-title">Early Search Engines — Brief History</h3>
+  <table>
+    <tr><th>Year</th><th>Engine</th><th>What it did</th></tr>
+    <tr><td>1990</td><td>Archie</td><td>First search tool — only searched FTP file names, no web pages.</td></tr>
+    <tr><td>1993</td><td>Gopher / Veronica</td><td>Searched text menus (Gopher system), not the modern web.</td></tr>
+    <tr><td>1994</td><td>Yahoo!</td><td>Human-edited directory — people categorized websites manually.</td></tr>
+    <tr><td>1994</td><td>AltaVista</td><td>First to crawl and index the full text of web pages automatically.</td></tr>
+    <tr><td>1996</td><td>Ask Jeeves</td><td>Allowed natural language questions instead of keywords.</td></tr>
+    <tr><td>1998</td><td><strong>Google</strong></td><td>Introduced <em>PageRank</em> — ranking pages by how many other pages link to them. Revolutionized search quality.</td></tr>
+  </table>
+
+  <p>Today, <strong>Google</strong> handles over 8.5 billion searches per day worldwide. In India, Google holds over 97% of the search market.</p>
+
+  <h3 class="sub-title">How a Modern Search Engine Works</h3>
+  <p>A search engine has three main parts: <strong>Crawler → Index → Query Processor</strong></p>
+
+  <div class="flow">
+    <div class="flow-step">Web Pages</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Web Crawler</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Parser</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Inverted Index</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Query Processor</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Ranked Results</div>
+    <div class="flow-caption">Search Engine Architecture</div>
+  </div>
+
+  <h4 class="mini-title">Step-by-Step Explanation</h4>
+  <ol>
+    <li><strong>Web Crawler (Spider/Bot):</strong> An automated program called a <em>crawler</em> or <em>spider</em> constantly visits web pages, reads their content, and follows all the links it finds to discover new pages. Google's crawler is called <em>Googlebot</em>.</li>
+    <li><strong>Parsing:</strong> The crawler extracts text, headings, keywords, and metadata (title, description, language) from each web page.</li>
+    <li><strong>Inverted Index:</strong> The extracted words are stored in a giant index. The system records which words appear in which documents. (Explained in detail in Section 6.)</li>
+    <li><strong>Query Processing:</strong> When you type a search query, the search engine looks it up in the index, finds matching pages, and ranks them.</li>
+    <li><strong>Ranking:</strong> Pages are ranked by relevance. Google uses 200+ factors including <em>PageRank</em>, content quality, and website speed.</li>
+    <li><strong>Viewing Results (SERP):</strong> The Search Engine Results Page (SERP) shows the ranked list with title, URL, and a short description (snippet) of each result.</li>
+  </ol>
+
+  <div class="analogy">
+    Imagine Google is a <strong>library with 60 billion books</strong>. The crawler is a team of librarians who read every book. The index is the giant catalogue at the entrance. When you ask a question, the librarian checks the catalogue (not the books) — that is why the answer comes in milliseconds.
+  </div>
+
+  <div class="box box-exam">
+    <span class="box-label">⭐ Exam Tip</span>
+    "How does Google Search work?" is a <strong>Very High probability</strong> exam question. Use the 6-step explanation above with the flow diagram. Mention Googlebot, Inverted Index, PageRank, and SERP.
+  </div>
+</div>
+
+
+<!-- ════════════════════ SECTION 6 ════════════════════ -->
+<div class="unit-section" id="indexing">
+  <span class="section-num">Section 06</span>
+  <h2 class="section-title">Indexing — Text &amp; Multimedia</h2>
+
+  <div class="box box-def">
+    <span class="box-label">Definition — Indexing</span>
+    <strong>Indexing</strong> is the process of organizing information from documents into a data structure that allows fast and efficient retrieval. It is the core reason why Google can search billions of pages in less than a second.
+  </div>
+
+  <h3 class="sub-title">The Inverted Index — How Indexing Works</h3>
+  <p>An <strong>inverted index</strong> maps each unique word to the list of documents (pages) where it appears. It is called "inverted" because it flips the normal document → word relationship into word → document.</p>
+
+  <div class="box box-example">
+    <span class="box-label">Classroom Simulation</span>
+    <strong>Suppose we have 3 small documents:</strong><br><br>
+    <strong>Doc 1:</strong> "Cricket match in Delhi"<br>
+    <strong>Doc 2:</strong> "Cricket fans in Mumbai"<br>
+    <strong>Doc 3:</strong> "Football match in Mumbai"<br><br>
+    <strong>The Inverted Index looks like this:</strong>
+  </div>
+
+  <div class="index-grid">
+    <div class="index-key">cricket</div><div class="index-val">Doc 1, Doc 2</div>
+    <div class="index-key">match</div><div class="index-val">Doc 1, Doc 3</div>
+    <div class="index-key">delhi</div><div class="index-val">Doc 1</div>
+    <div class="index-key">fans</div><div class="index-val">Doc 2</div>
+    <div class="index-key">mumbai</div><div class="index-val">Doc 2, Doc 3</div>
+    <div class="index-key">football</div><div class="index-val">Doc 3</div>
+  </div>
+
+  <p>Now if a user searches for <mark>"cricket match"</mark>, the system finds <em>cricket → {Doc1, Doc2}</em> and <em>match → {Doc1, Doc3}</em>. The intersection is <strong>Doc 1</strong> — instantly, without reading any document again.</p>
+
+  <h3 class="sub-title">Why is Indexing Important?</h3>
+  <ul>
+    <li><strong>Speed:</strong> Without indexing, every search query would have to read every single document — impossible at Google's scale.</li>
+    <li><strong>Efficiency:</strong> Index lookup is thousands of times faster than full document scanning.</li>
+    <li><strong>Scalability:</strong> The index can be updated incrementally as new pages are added.</li>
+  </ul>
+
+  <div class="analogy">
+    An inverted index is exactly like the <strong>index at the back of a textbook</strong>. You look up "photosynthesis" → "pages 45, 67, 112". You go directly to those pages instead of reading the whole book. Google does the same at a scale of 60 billion pages.
+  </div>
+
+  <h3 class="sub-title">Multimedia Indexing</h3>
+
+  <div class="box box-def">
+    <span class="box-label">Definition</span>
+    <strong>Multimedia Indexing</strong> is the process of indexing non-text content — images, audio files, and video files — so they can be searched and retrieved efficiently.
+  </div>
+
+  <p>Text indexing works on words. But how do you index a <em>photograph</em> or a <em>song</em>? Multimedia indexing uses different techniques:</p>
+
+  <table>
+    <tr><th>Media Type</th><th>Indexing Technique</th><th>Example</th></tr>
+    <tr>
+      <td><strong>Images</strong></td>
+      <td>
+        1. <em>Text-based:</em> Index surrounding text, alt-tags, captions<br>
+        2. <em>Content-based:</em> Analyze colours, shapes, textures using AI
+      </td>
+      <td>Google Image Search, reverse image search</td>
+    </tr>
+    <tr>
+      <td><strong>Audio</strong></td>
+      <td>
+        1. Speech-to-text conversion, then text indexing<br>
+        2. Audio fingerprinting (unique signature)
+      </td>
+      <td>Shazam identifying songs, YouTube caption search</td>
+    </tr>
+    <tr>
+      <td><strong>Video</strong></td>
+      <td>
+        1. Index metadata (title, description, tags)<br>
+        2. Analyse keyframes as images<br>
+        3. Transcribe audio track
+      </td>
+      <td>YouTube search, Netflix content search</td>
+    </tr>
+  </table>
+
+  <div class="box box-note">
+    <span class="box-label">Note</span>
+    <strong>Multimedia indexing is more complex</strong> than text indexing because computers cannot directly "read" images or audio the way they read text. Modern AI (CNNs, speech recognition models) makes it possible.
+  </div>
+</div>
+
+
+<!-- ════════════════════ SECTION 7 ════════════════════ -->
+<div class="unit-section" id="query">
+  <span class="section-num">Section 07</span>
+  <h2 class="section-title">Queries &amp; Searching</h2>
+
+  <div class="box box-def">
+    <span class="box-label">Definition — Query</span>
+    A <strong>query</strong> is the input (a word, phrase, or sentence) that a user provides to a search engine or information retrieval system to express what information they are looking for.
+  </div>
+
+  <h3 class="sub-title">Types of Queries</h3>
+  <table>
+    <tr><th>Query Type</th><th>Description</th><th>Example</th></tr>
+    <tr><td><strong>Keyword Query</strong></td><td>Simple words entered without grammar</td><td><code>biryani recipe Hyderabad</code></td></tr>
+    <tr><td><strong>Phrase Query</strong></td><td>An exact phrase, usually in quotes</td><td><code>"best cricket academy India"</code></td></tr>
+    <tr><td><strong>Boolean Query</strong></td><td>Uses AND, OR, NOT operators</td><td><code>Python AND tutorial NOT advanced</code></td></tr>
+    <tr><td><strong>Natural Language Query</strong></td><td>A full sentence or question</td><td><code>What are healthy diet tips for students?</code></td></tr>
+    <tr><td><strong>Wildcard Query</strong></td><td>Uses * for unknown parts</td><td><code>data * analysis</code></td></tr>
+  </table>
+
+  <h3 class="sub-title">How Query Processing Works</h3>
+
+  <div class="flow">
+    <div class="flow-step">User types query</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Query parsing &amp; pre-processing</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Index lookup</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Candidate documents retrieved</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Ranking algorithm</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Results displayed (SERP)</div>
+    <div class="flow-caption">Query Processing Pipeline</div>
+  </div>
+
+  <h4 class="mini-title">Query Pre-processing Steps</h4>
+  <ul>
+    <li><strong>Stop word removal:</strong> Common words like "the", "is", "a", "in" are removed as they add no search value. ("What is the capital of India?" → <code>capital India</code>)</li>
+    <li><strong>Stemming:</strong> Words are reduced to their root form. ("running", "runs", "ran" → <code>run</code>)</li>
+    <li><strong>Spell correction:</strong> Misspellings are automatically fixed. ("Mumai" → Mumbai)</li>
+    <li><strong>Expansion:</strong> Synonyms may be added. ("automobile" also searches "car", "vehicle")</li>
+  </ul>
+
+  <h3 class="sub-title">Searching Techniques</h3>
+  <table>
+    <tr><th>Technique</th><th>How it works</th></tr>
+    <tr><td><strong>Sequential Search</strong></td><td>Reads every document one by one. Slow but accurate. Used for very small datasets.</td></tr>
+    <tr><td><strong>Index-based Search</strong></td><td>Uses an inverted index for near-instant results. Used by all major search engines.</td></tr>
+    <tr><td><strong>Fuzzy Search</strong></td><td>Finds approximate matches. Useful for typos. ("Kolkota" returns results for "Kolkata")</td></tr>
+    <tr><td><strong>Semantic Search</strong></td><td>Understands the meaning, not just the exact words. ("big red fruit" might return results for "tomato" or "apple")</td></tr>
+    <tr><td><strong>Full-Text Search</strong></td><td>Searches every word in every document. Used in databases like MySQL, Elasticsearch.</td></tr>
+  </table>
+
+  <h3 class="sub-title">Ranking — How Results are Ordered</h3>
+  <p>After retrieval, documents must be ranked by relevance. Key factors:</p>
+  <ul>
+    <li><strong>TF-IDF (Term Frequency–Inverse Document Frequency):</strong> A word appearing many times in a document (<em>TF</em>) but rarely across all documents (<em>IDF</em>) is considered highly relevant.</li>
+    <li><strong>PageRank:</strong> Google's original algorithm — a page linked to by many other important pages is considered more trustworthy.</li>
+    <li><strong>User signals:</strong> Click-through rate, time spent on page, bounce rate.</li>
+    <li><strong>Freshness:</strong> Newer content is preferred for time-sensitive queries.</li>
+  </ul>
+
+  <div class="box box-exam">
+    <span class="box-label">⭐ Exam Tip</span>
+    For queries, always mention: (1) definition, (2) at least 3 types with examples, (3) query pre-processing steps (stop words, stemming), (4) ranking factors (TF-IDF, PageRank). This comprehensively answers both 4-mark and 10-mark questions.
+  </div>
+</div>
+
+
+<!-- ════════════════════ SECTION 8 ════════════════════ -->
+<div class="unit-section" id="webmining">
+  <span class="section-num">Section 08</span>
+  <h2 class="section-title">Web Mining, Crawlers &amp; Web Structure</h2>
+
+  <div class="box box-def">
+    <span class="box-label">Definition — Web Mining</span>
+    <strong>Web Mining</strong> is the application of data mining techniques to automatically discover and extract useful information from the World Wide Web — from web content, web structure, and web usage logs.
+  </div>
+
+  <h3 class="sub-title">Three Types of Web Mining</h3>
+  <table>
+    <tr><th>Type</th><th>What it mines</th><th>Example</th></tr>
+    <tr>
+      <td><strong>Web Content Mining</strong></td>
+      <td>The actual text, images, and data on web pages</td>
+      <td>Extracting product prices from Flipkart</td>
+    </tr>
+    <tr>
+      <td><strong>Web Structure Mining</strong></td>
+      <td>The hyperlink structure between web pages (the "graph" of the web)</td>
+      <td>PageRank — pages with more inbound links rank higher</td>
+    </tr>
+    <tr>
+      <td><strong>Web Usage Mining</strong></td>
+      <td>Log files recording how users browse — which pages they visit, in what order</td>
+      <td>Amazon recommending products based on your browsing history</td>
+    </tr>
+  </table>
+
+  <h3 class="sub-title">Web Structure — How the Internet is Connected</h3>
+  <p>The web is a giant <strong>directed graph</strong>:</p>
+  <ul>
+    <li>Each <strong>web page</strong> is a node (vertex).</li>
+    <li>Each <strong>hyperlink</strong> from page A to page B is a directed edge A→B.</li>
+    <li>A page with many incoming links (<em>in-degree</em>) is considered important — this is the basis of PageRank.</li>
+  </ul>
+
+  <div class="analogy">
+    Think of the web like a <strong>voting system</strong>. Every time a website links to another site, it is "voting" for it. A site that gets many votes (links) from reputable sites is considered important. This is exactly how Google's PageRank works.
+  </div>
+
+  <h3 class="sub-title">Web Crawlers (Spiders)</h3>
+
+  <div class="box box-def">
+    <span class="box-label">Definition</span>
+    A <strong>Web Crawler</strong> (also called a spider or bot) is an automated program that browses the web systematically, following hyperlinks from page to page, to collect content for indexing.
+  </div>
+
+  <h4 class="mini-title">How a Crawler Works</h4>
+  <ol>
+    <li>Start with a <em>seed list</em> of known URLs (web addresses).</li>
+    <li>Download the web page at each URL.</li>
+    <li>Extract all hyperlinks from the downloaded page.</li>
+    <li>Add new (unvisited) links to the queue.</li>
+    <li>Repeat — this continues indefinitely, discovering new pages.</li>
+    <li>Extracted content is sent to the indexing system.</li>
+  </ol>
+
+  <h4 class="mini-title">Distributed Search &amp; Crawlers</h4>
+  <p>The web has over <strong>1.9 billion websites</strong>. A single crawler would take years. Therefore, modern search engines use <strong>distributed crawling</strong>:</p>
+  <ul>
+    <li>Thousands of crawler machines run <em>in parallel</em> across multiple data centres.</li>
+    <li>Google's data centres are spread across the USA, Europe, Asia (including India).</li>
+    <li>Each crawler machine is assigned a different portion of the web to crawl.</li>
+    <li>Results are collected centrally and merged into a single index.</li>
+  </ul>
+
+  <h3 class="sub-title">Search Engine Coverage</h3>
+  <p>Not all of the web is indexed by search engines. The web is divided into:</p>
+  <ul>
+    <li><strong>Surface Web (Indexed Web):</strong> Pages that search engines can find and index — approximately 4–5% of the total web. Includes Google-searchable content.</li>
+    <li><strong>Deep Web:</strong> Pages not indexed by search engines — private databases, login-required pages, email inboxes, online banking portals. Not accessible via Google.</li>
+    <li><strong>Dark Web:</strong> A small portion of the deep web that requires special software (like Tor) to access. Often associated with illegal activity.</li>
+  </ul>
+
+  <h3 class="sub-title">Visualization in Web Mining</h3>
+  <p>Visualization helps analysts understand patterns discovered by web mining:</p>
+  <ul>
+    <li><strong>Link graphs:</strong> Show how web pages are connected to each other.</li>
+    <li><strong>Tag clouds:</strong> Visual representation of keyword frequency — more frequent words appear larger.</li>
+    <li><strong>Heat maps:</strong> Show which parts of a webpage users click on most.</li>
+    <li><strong>Traffic dashboards:</strong> Tools like Google Analytics visualize website visitor patterns.</li>
+  </ul>
+</div>
+
+
+<!-- ════════════════════ SECTION 9 ════════════════════ -->
+<div class="unit-section" id="summarization">
+  <span class="section-num">Section 09</span>
+  <h2 class="section-title">Summarization &amp; Information Monitor</h2>
+
+  <h3 class="sub-title">Automatic Text Summarization</h3>
+
+  <div class="box box-def">
+    <span class="box-label">Definition</span>
+    <strong>Automatic Text Summarization</strong> is the process of using a computer program to automatically create a shorter version of a text document that retains the most important information.
+  </div>
+
+  <p>There are two main approaches:</p>
+
+  <table>
+    <tr><th></th><th>Extractive Summarization</th><th>Abstractive Summarization</th></tr>
+    <tr>
+      <td><strong>How it works</strong></td>
+      <td>Selects and copies the most important sentences directly from the original text</td>
+      <td>Generates new sentences that capture the meaning (like a human would paraphrase)</td>
+    </tr>
+    <tr>
+      <td><strong>Analogy</strong></td>
+      <td>Highlighting sentences in a book</td>
+      <td>Writing your own summary in your own words</td>
+    </tr>
+    <tr>
+      <td><strong>Complexity</strong></td>
+      <td>Simpler — no new language generation</td>
+      <td>Complex — requires deep language understanding (GPT, BERT)</td>
+    </tr>
+    <tr>
+      <td><strong>Example use</strong></td>
+      <td>News aggregators, legal document summaries</td>
+      <td>Google's AI summaries, ChatGPT summaries</td>
+    </tr>
+  </table>
+
+  <h3 class="sub-title">Training a Summarizer</h3>
+  <p>A machine learning summarizer is trained on large datasets of <strong>(document, human-written summary)</strong> pairs. The model learns to predict which sentences or words are most important. Popular models include:</p>
+  <ul>
+    <li><strong>BERT</strong> (Bidirectional Encoder Representations from Transformers) — for extractive summarization.</li>
+    <li><strong>T5, BART, GPT</strong> — for abstractive summarization.</li>
+  </ul>
+
+  <h3 class="sub-title">Sentence Selection</h3>
+  <p>In <em>extractive summarization</em>, the key challenge is <strong>sentence selection</strong> — deciding which sentences to include. Common scoring criteria:</p>
+  <ul>
+    <li><strong>Position:</strong> Sentences at the beginning and end of a document tend to be more important.</li>
+    <li><strong>TF-IDF score:</strong> Sentences containing high-TF-IDF words are ranked higher.</li>
+    <li><strong>Named entities:</strong> Sentences mentioning named entities (people, places) are often important.</li>
+    <li><strong>Cue phrases:</strong> Sentences starting with "In conclusion", "Most importantly", "The key finding" are prioritized.</li>
+  </ul>
+
+  <div class="box box-example">
+    <span class="box-label">Example</span>
+    <strong>Original paragraph:</strong> "The Indian Space Research Organisation (ISRO) successfully launched the Chandrayaan-3 mission on July 14, 2023. The mission aimed to land near the lunar south pole. It made India the fourth country to achieve a soft landing on the Moon."<br><br>
+    <strong>Extractive summary (1 sentence selected):</strong> "It made India the fourth country to achieve a soft landing on the Moon."
+  </div>
+
+  <h3 class="sub-title">Information Monitor</h3>
+
+  <div class="box box-def">
+    <span class="box-label">Definition</span>
+    An <strong>Information Monitor</strong> (also called a Web Monitor or Change Monitor) is a system that continuously watches specified web sources and <em>alerts the user</em> when new or changed information matching their interest appears.
+  </div>
+
+  <p>Examples of Information Monitors:</p>
+  <ul>
+    <li><strong>Google Alerts:</strong> You set up a keyword (e.g., "ISRO mission"), and Google emails you whenever a new article about it is published.</li>
+    <li><strong>Stock price monitors:</strong> Alert you when a stock price crosses a threshold.</li>
+    <li><strong>Social media monitors:</strong> Track brand mentions — companies are alerted whenever their product is mentioned on Twitter or Instagram.</li>
+    <li><strong>News monitors:</strong> Journalists use tools like Mention.com to track news about specific topics.</li>
+    <li><strong>Government portals:</strong> Monitor changes in government circulars or job notifications.</li>
+  </ul>
+
+  <div class="analogy">
+    An information monitor is like setting up a <strong>Google Alert</strong> for your own name. Whenever your name appears anywhere on the internet, you get an email. The system is <em>monitoring</em> the web 24×7 on your behalf.
+  </div>
+</div>
+
+
+<!-- ════════════════════ SECTION 10 ════════════════════ -->
+<div class="unit-section" id="diff">
+  <span class="section-num">Section 10</span>
+  <h2 class="section-title">IE vs. Information Retrieval — Key Differences</h2>
+
+  <p>This comparison is a <strong>High Probability exam question</strong>. Understand it clearly:</p>
+
+  <table>
+    <tr><th>Aspect</th><th>Information Extraction (IE)</th><th>Information Retrieval (IR)</th></tr>
+    <tr>
+      <td><strong>Goal</strong></td>
+      <td>Extract specific facts / structured data from text</td>
+      <td>Find relevant documents that match a query</td>
+    </tr>
+    <tr>
+      <td><strong>Output</strong></td>
+      <td>Structured data (table, database, JSON)</td>
+      <td>List of relevant documents (search results)</td>
+    </tr>
+    <tr>
+      <td><strong>Input</strong></td>
+      <td>Unstructured text</td>
+      <td>User query + document collection</td>
+    </tr>
+    <tr>
+      <td><strong>Processing</strong></td>
+      <td>Deep NLP: NER, relation extraction, parsing</td>
+      <td>Index lookup + ranking</td>
+    </tr>
+    <tr>
+      <td><strong>Example</strong></td>
+      <td>Extracting patient names and diagnoses from hospital records</td>
+      <td>Google returning a list of relevant web pages for a search</td>
+    </tr>
+    <tr>
+      <td><strong>What it answers</strong></td>
+      <td>"What specific facts are in this text?"</td>
+      <td>"Which documents are relevant to my query?"</td>
+    </tr>
+    <tr>
+      <td><strong>Tools/Tech</strong></td>
+      <td>SpaCy, NLTK, Stanford NLP, BERT</td>
+      <td>Google, Elasticsearch, Apache Solr</td>
+    </tr>
+  </table>
+
+  <div class="box box-example">
+    <span class="box-label">Simple Analogy</span>
+    <strong>IR</strong> is like a librarian who says: <em>"Here are 10 books about cricket."</em><br>
+    <strong>IE</strong> is like a researcher who reads those 10 books and gives you: <em>"Sachin Tendulkar scored 100 centuries. His first century was in 1990 against England."</em>
+  </div>
+</div>
+
+
+<!-- ════════════════════ SECTION 11 — QUICK REVISION ════════════════════ -->
+<div class="unit-section" id="exam">
+  <span class="section-num">Section 11</span>
+  <h2 class="section-title">Quick Revision &amp; Exam Guide</h2>
+
+  <!-- MCQ ANSWERS -->
+  <h3 class="sub-title">Section B — MCQ Answers (Ready Reference)</h3>
+  <table>
+    <tr><th>Q#</th><th>Answer</th><th>Why</th></tr>
+    <tr><td>1</td><td><strong>b) Extracting useful information from text</strong></td><td>IE converts unstructured text → structured facts</td></tr>
+    <tr><td>2</td><td><strong>c) Delhi</strong></td><td>Delhi is a Location entity. "Running" is a verb, "Quickly" is adverb, "Beautiful" is adjective.</td></tr>
+    <tr><td>3</td><td><strong>c) Indexing</strong></td><td>Search engines build an inverted index for fast retrieval</td></tr>
+    <tr><td>4</td><td><strong>b) Google</strong></td><td>Google is a search engine. Python and Java are programming languages; Linux is an OS.</td></tr>
+    <tr><td>5</td><td><strong>c) Important word groups</strong></td><td>Phrase extraction finds meaningful multi-word groups</td></tr>
+  </table>
+
+  <!-- TRUE/FALSE ANSWERS -->
+  <h3 class="sub-title">Section C — True/False Answers</h3>
+  <table>
+    <tr><th>Statement</th><th>Answer</th></tr>
+    <tr><td>IE converts unstructured text into structured information.</td><td>✅ <strong>True</strong></td></tr>
+    <tr><td>Search engines use indexing for efficient retrieval.</td><td>✅ <strong>True</strong></td></tr>
+    <tr><td>Entity extraction identifies names, locations, and organizations.</td><td>✅ <strong>True</strong></td></tr>
+    <tr><td>Queries are used to search information in databases or search engines.</td><td>✅ <strong>True</strong></td></tr>
+    <tr><td>Multimedia indexing is related only to text files.</td><td>❌ <strong>False</strong> — It covers images, audio, and video too.</td></tr>
+  </table>
+
+  <!-- FILL IN THE BLANKS -->
+  <h3 class="sub-title">Section D — Fill in the Blanks Answers</h3>
+  <table>
+    <tr><th>#</th><th>Answer</th></tr>
+    <tr><td>1</td><td>IE stands for Information <strong>Extraction</strong></td></tr>
+    <tr><td>2</td><td>Search engines organize information using <strong>Indexing</strong></td></tr>
+    <tr><td>3</td><td>NER identifies names of people, places, and <strong>Organizations</strong></td></tr>
+    <tr><td>4</td><td>A user enters a <strong>Query</strong> to search information online</td></tr>
+    <tr><td>5</td><td>Phrase extraction identifies meaningful groups of <strong>Words</strong></td></tr>
+  </table>
+
+  <!-- KEY DEFINITIONS FOR 2-MARK SECTION A -->
+  <h3 class="sub-title">Section A — Very Short Answer Definitions (2 Marks)</h3>
+  <table>
+    <tr><th>Term</th><th>Definition (write exactly this)</th></tr>
+    <tr><td>Information Extraction (IE)</td><td>The automatic process of identifying and extracting specific structured facts from unstructured text.</td></tr>
+    <tr><td>Entity Extraction</td><td>The process of identifying and classifying named entities (persons, places, organizations, dates) in text.</td></tr>
+    <tr><td>Search Engine</td><td>A software system that searches a large document collection for content matching a user's query and returns ranked results.</td></tr>
+    <tr><td>Phrase Extraction</td><td>The process of identifying meaningful multi-word groups in text that carry important information.</td></tr>
+    <tr><td>Indexing (search)</td><td>The process of organizing document content into a data structure (inverted index) to allow fast and efficient retrieval.</td></tr>
+    <tr><td>Query</td><td>The input (word, phrase, or sentence) a user provides to a search or information retrieval system to find information.</td></tr>
+    <tr><td>Information Retrieval (IR)</td><td>The process of finding relevant documents from a collection that match a given user query.</td></tr>
+    <tr><td>Multimedia Indexing</td><td>The process of indexing non-text content (images, audio, video) to enable their efficient search and retrieval.</td></tr>
+    <tr><td>Named Entity Recognition (NER)</td><td>An NLP task that identifies and classifies named entities in text into categories like Person, Location, Organization, and Date.</td></tr>
+    <tr><td>Purpose of IE System</td><td>To automatically convert large volumes of unstructured text into structured, machine-readable data for analysis and decision-making.</td></tr>
+  </table>
+
+  <!-- EXAM PROBABILITY TABLE -->
+  <h3 class="sub-title">🎯 High-Probability Topic Checklist</h3>
+  <table>
+    <tr><th>Topic</th><th>Likely Question Type</th><th>Marks</th></tr>
+    <tr><td>IE definition + pipeline (components)</td><td>Q3a or Q4a long answer</td><td>10–15</td></tr>
+    <tr><td>NER with examples + types</td><td>Q3b or Q4c</td><td>10–15</td></tr>
+    <tr><td>IE Applications (4 domains)</td><td>Q4a(ii) long answer</td><td>15</td></tr>
+    <tr><td>Search engine working (step-by-step)</td><td>Q3c or Q4b</td><td>10–15</td></tr>
+    <tr><td>Inverted Index with example</td><td>Q3c or Q4b</td><td>4–10</td></tr>
+    <tr><td>Multimedia indexing</td><td>Short note Q2</td><td>4</td></tr>
+    <tr><td>IE vs IR difference</td><td>Short note Q2 or Q3</td><td>4–10</td></tr>
+    <tr><td>Query types + processing</td><td>Q3d or Q4c</td><td>10</td></tr>
+    <tr><td>Phrase Extraction</td><td>Short note / MCQ</td><td>2–4</td></tr>
+    <tr><td>Web Mining types</td><td>Short note</td><td>4</td></tr>
+    <tr><td>Summarization techniques</td><td>Short note</td><td>4</td></tr>
+  </table>
+
+  <div class="exam-panel">
+    <h4>📝 LAST-MINUTE REVISION — KEY FACTS TO REMEMBER</h4>
+    <ul>
+      <li>IE = Unstructured Text → Structured Data</li>
+      <li>NER types: PERSON, LOCATION, ORGANIZATION, DATE, MONEY, PERCENTAGE</li>
+      <li>IE Pipeline: Tokenization → POS Tagging → NER → Relation Extraction</li>
+      <li>Search engine parts: Crawler → Parser → Inverted Index → Query Processor → Ranker</li>
+      <li>Google's crawler = Googlebot | First search engine = Archie (1990) | Google founded = 1998</li>
+      <li>Inverted Index = word → list of documents (like textbook index at back)</li>
+      <li>Query pre-processing: stop word removal, stemming, spell check</li>
+      <li>Ranking factors: TF-IDF, PageRank, freshness, user signals</li>
+      <li>Web mining types: Content Mining, Structure Mining, Usage Mining</li>
+      <li>Distributed crawling = thousands of crawlers working in parallel</li>
+      <li>Summarization: Extractive (copies sentences) vs Abstractive (generates new text)</li>
+      <li>Information Monitor = alerts user when new relevant content appears (e.g. Google Alerts)</li>
+      <li>Multimedia indexing: images (alt-text + CBIR), audio (speech-to-text), video (frames + transcript)</li>
+      <li>Surface Web ≈ 4–5% of total web; Deep Web = databases/private; Dark Web = Tor</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  SRHU · Introduction to NLP · BSc Programme &nbsp;·&nbsp; Unit V Study Notes<br>
+  Prepared for classroom use · All examples use Indian context
+</footer>
+
+</body>
+</html>
